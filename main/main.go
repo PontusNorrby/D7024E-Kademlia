@@ -20,7 +20,7 @@ func main() {
 		//First node in the network
 	}
 	//A new node in the network
-	//func join network..
+	//func join network.
 	fmt.Printf("", newRouteTable)
 }
 
@@ -29,7 +29,12 @@ func GetOutboundIP() net.IP {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer conn.Close()
+	defer func(conn net.Conn) {
+		err := conn.Close()
+		if err != nil {
+
+		}
+	}(conn)
 
 	localAddr := conn.LocalAddr().(*net.UDPAddr)
 
