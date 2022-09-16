@@ -1,12 +1,17 @@
-package d7024e
+package kademlia
+
+import (
+	"github.com/PontusNorrby/D7024E-Kademlia/src/network"
+	"github.com/PontusNorrby/D7024E-Kademlia/src/routing"
+)
 
 type Kademlia struct {
-	nt *Network
-	rt *RoutingTable
+	nt *network.Network
+	rt *routing.RoutingTable
 	m  map[string][]byte
 }
 
-func newKadmlia(nt *Network, rt *RoutingTable) Kademlia {
+func newKadmlia(nt *network.Network, rt *routing.RoutingTable) Kademlia {
 	kademlia := Kademlia{}
 	kademlia.nt = nt
 	kademlia.rt = rt

@@ -1,4 +1,5 @@
-FROM alpine:latest
+# syntax=docker/dockerfile:1
+FROM golang:1.16-alpine
 
 # Add the commands needed to put your compiled go binary in the container and
 # run it when the container starts.
