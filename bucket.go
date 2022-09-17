@@ -1,9 +1,7 @@
-package routing
+package d7024e
 
 import (
 	"container/list"
-	"github.com/PontusNorrby/D7024E-Kademlia"
-	"github.com/PontusNorrby/D7024E-Kademlia/src/kademlia"
 )
 
 // bucket definition
@@ -21,10 +19,10 @@ func newBucket() *bucket {
 
 // AddContact adds the Contact to the front of the bucket
 // or moves it to the front of the bucket if it already existed
-func (bucket *bucket) AddContact(contact kademlia.Contact) {
+func (bucket *bucket) AddContact(contact Contact) {
 	var element *list.Element
 	for e := bucket.list.Front(); e != nil; e = e.Next() {
-		nodeID := e.Value.(kademlia.Contact).ID
+		nodeID := e.Value.(Contact).ID
 
 		if (contact).ID.Equals(nodeID) {
 			element = e
@@ -32,7 +30,7 @@ func (bucket *bucket) AddContact(contact kademlia.Contact) {
 	}
 
 	if element == nil {
-		if bucket.list.Len() < d7024e.bucketSize {
+		if bucket.list.Len() < bucketSize {
 			bucket.list.PushFront(contact)
 		}
 	} else {
@@ -40,13 +38,13 @@ func (bucket *bucket) AddContact(contact kademlia.Contact) {
 	}
 }
 
-// GetContactAndCalcDistance returns an array of Contacts where
+// GetContactAndCalcDistance returns an array of Contacts where 
 // the distance has already been calculated
-func (bucket *bucket) GetContactAndCalcDistance(target *kademlia.KademliaID) []kademlia.Contact {
-	var contacts []kademlia.Contact
+func (bucket *bucket) GetContactAndCalcDistance(target *KademliaID) []Contact {
+	var contacts []Contact
 
 	for elt := bucket.list.Front(); elt != nil; elt = elt.Next() {
-		contact := elt.Value.(kademlia.Contact)
+		contact := elt.Value.(Contact)
 		contact.CalcDistance(target)
 		contacts = append(contacts, contact)
 	}
