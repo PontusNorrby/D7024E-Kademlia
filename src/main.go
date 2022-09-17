@@ -2,8 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/PontusNorrby/D7024E-Kademlia/src/kademlia"
-	"github.com/PontusNorrby/D7024E-Kademlia/src/routing"
+	. "github.com/PontusNorrby/D7024E-Kademlia/src/kademlia"
 	"log"
 	"net"
 )
@@ -13,10 +12,10 @@ var (
 )
 
 func main() {
-	id := kademlia.NewRandomKademliaID()
+	id := NewRandomKademliaID()
 	LocalIp := GetOutboundIP()
-	selfContact := kademlia.NewContact(id, LocalIp.String())
-	newRouteTable := routing.NewRoutingTable(selfContact)
+	selfContact := NewContact(id, LocalIp.String())
+	newRouteTable := NewRoutingTable(selfContact)
 	if selfContact.String() == BaseIp {
 		//First node in the network
 	}
