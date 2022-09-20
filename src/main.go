@@ -5,23 +5,42 @@ import (
 	"github.com/PontusNorrby/D7024E-Kademlia/src/kademlia"
 	"log"
 	"net"
+	"strconv"
 )
 
 var (
 	BaseIp string = "172.20.128.2"
+	Port   int    = 3000
 )
 
 func main() {
-	id := kademlia.NewRandomKademliaID()
+	//id := kademlia.NewRandomKademliaID()
+	//LocalIp := GetOutboundIP()
+	//selfContact := kademlia.NewContact(id, LocalIp.String())
+	//newRouteTable := kademlia.NewRoutingTable(selfContact)
+
+	//This is the node every node is going to join
+	target := kademlia.NewRandomKademliaID()
+	contact := kademlia.NewContact(target, BaseIp+":"+strconv.Itoa(Port))
+
 	LocalIp := GetOutboundIP()
-	selfContact := kademlia.NewContact(id, LocalIp.String())
-	newRouteTable := kademlia.NewRoutingTable(selfContact)
-	if selfContact.String() == BaseIp {
-		//First node in the network
+	// The current node, aka this node
+	currentContact := kademlia.NewContact(kademlia.NewRandomKademliaID(), LocalIp.String()+":"+strconv.Itoa(Port))
+	network := kademlia.NewNetwork(&currentContact)
+
+	fmt.Println("My IP: ", LocalIp)
+
+	ping := network.SendPingMessage(&contact)
+	fmt.Println(ping)
+	fmt.Println("contact.String(): ", contact.String())
+	fmt.Println("BaseIp: ", BaseIp)
+	if contact.String() == BaseIp {
+		fmt.Println("Node IP: ", LocalIp.String())
 	}
+
 	//A new node in the network
 	//func join network.
-	fmt.Printf("", newRouteTable)
+	fmt.Printf("", network.RoutingTable)
 }
 
 func GetOutboundIP() net.IP {

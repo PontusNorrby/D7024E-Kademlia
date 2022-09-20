@@ -1,17 +1,16 @@
 package kademlia
 
 type Kademlia struct {
-	nt *Network
-	rt *RoutingTable
-	m  map[string][]byte
+	m map[KademliaID]Value
 }
 
-func newKadmlia(nt *Network, rt *RoutingTable) Kademlia {
-	kademlia := Kademlia{}
-	kademlia.nt = nt
-	kademlia.rt = rt
-	kademlia.m = make(map[string][]byte)
+type Value struct {
+	data []byte
+}
 
+func NewKademliaStruct() *Kademlia {
+	kademlia := &Kademlia{}
+	kademlia.m = make(map[KademliaID]Value)
 	return kademlia
 }
 
