@@ -20,10 +20,6 @@ func NewNetwork(node *Contact) *Network {
 	return &Network{NewKademliaStruct(), node, NewRoutingTable(*node)}
 }
 
-func Listen(ip string, port int) {
-	// TODO
-}
-
 func (network *Network) Listen(ip string, port int) {
 	addrToString := strings.Join([]string{ip, strconv.Itoa(port)}, ":")
 	resolveUdpAddress, resolveUdpError := net.ResolveUDPAddr("udp4", addrToString)
@@ -67,8 +63,60 @@ func (network *Network) Listen(ip string, port int) {
 	}
 }
 
-// TODO: MAKE THIS
-func getResponseMessage(message []byte, Network *Network) []byte {
+// TODO: COMPLETE THIS
+func getResponseMessage(message []byte, network *Network) []byte {
+	messageList := strings.Split(string(message), " ")
+	if messageList[0] == "Ping" {
+		body, err := json.Marshal(network.CurrentNode)
+		if err != nil {
+			log.Println(err)
+			panic(err)
+		}
+		ex := extractContact([]byte(messageList[1]), network)
+		if ex != nil {
+			return ex
+		}
+		return body
+
+	} else if messageList[0] == "FindContact" {
+		//TODO
+
+	} else if messageList[0] == "FindData" {
+		//TODO
+
+	} else if messageList[0] == "StoreMessage" {
+		//TODO
+
+	}
+	return []byte("Error: Invalid RPC protocol")
+}
+
+// TODO: Which is better if statements or switch case?
+//func getResponseMessage(message []byte, network *Network) []byte {
+//	messageList := strings.Split(string(message), " ")
+//	switch{
+//	case messageList[0] == "Ping":
+//		body, err := json.Marshal(network.CurrentNode)
+//		if err != nil {
+//			log.Println(err)
+//			panic(err)
+//		}
+//		ex := extractContact([]byte(messageList[1]), network)
+//		if ex != nil {
+//			return ex
+//		}
+//		return body
+//	}
+//	return []byte("Error: Invalid RPC protocol")
+//}
+
+func extractContact(message []byte, network *Network) []byte {
+	var contact *Contact
+	err := json.Unmarshal(message, &contact)
+	if err != nil {
+		return nil
+	}
+	network.RoutingTable.AddContact(*contact)
 	return nil
 }
 
