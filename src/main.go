@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	BaseIp string = "172.20.128.2"
+	BaseIp string = "172.20.0.2"
 	Port   int    = 3000
 )
 
@@ -25,7 +25,7 @@ func main() {
 
 	LocalIp := GetOutboundIP()
 	// The current node, aka this node
-	currentContact := kademlia.NewContact(kademlia.NewRandomKademliaID(), LocalIp.String()+":"+strconv.Itoa(Port))
+	currentContact := kademlia.NewContact(kademlia.NewRandomKademliaID(), LocalIp.String())
 	network := kademlia.NewNetwork(&currentContact)
 
 	fmt.Println("My IP: ", LocalIp)
@@ -37,6 +37,8 @@ func main() {
 	if contact.String() == BaseIp {
 		fmt.Println("Node IP: ", LocalIp.String())
 	}
+
+	fmt.Println(network.RoutingTable)
 
 	//A new node in the network
 	//func join network.

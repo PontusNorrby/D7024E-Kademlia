@@ -1,6 +1,7 @@
 package kademlia
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -76,19 +77,42 @@ func getResponseMessage(message []byte, Network *Network) []byte {
 func (network *Network) SendPingMessage(contact *Contact) bool {
 	conn, err3 := net.Dial("udp4", contact.Address)
 	if err3 != nil {
+		fmt.Println("Error 1")
 		log.Println(err3)
 	}
 	defer conn.Close()
-	conn.Write([]byte("Test message123"))
+
+	// Message builder
+	startMessage := []byte(newPing().startMessage + " ")
+	body, err := json.Marshal(network.CurrentNode)
+	message := append(startMessage, body...)
+	conn.Write([]byte(message))
+
 	buffer := make([]byte, 4096)
 	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
 	n, err := conn.Read(buffer)
 	if err != nil {
+		fmt.Println("Error 2")
 		fmt.Println(err)
 		return false
 	}
 	fmt.Println("\tResponse from server:", string(buffer[:n]))
+	handlePingResponse(buffer[:n], network)
+	//TODO: update buckets after response
 	return true
+}
+
+func handlePingResponse(message []byte, network *Network) {
+	if string(message[:5]) == "Error" {
+		log.Println(string(message))
+		return
+	} else {
+		var contact *Contact
+		json.Unmarshal(message, &contact)
+		network.RoutingTable.AddContact(*contact)
+
+	}
+	// fmt.Println("ping response: ", network.routingTable)
 }
 
 func (network *Network) SendFindContactMessage(contact *Contact) {
