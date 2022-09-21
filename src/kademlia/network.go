@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -19,6 +21,54 @@ func NewNetwork(node *Contact) *Network {
 
 func Listen(ip string, port int) {
 	// TODO
+}
+
+func (network *Network) Listen(ip string, port int) {
+	addrToString := strings.Join([]string{ip, strconv.Itoa(port)}, ":")
+	resolveUdpAddress, resolveUdpError := net.ResolveUDPAddr("udp4", addrToString)
+	if resolveUdpError != nil {
+		fmt.Println(resolveUdpError)
+		panic(resolveUdpError)
+	}
+	listenUdpResponse, listenUdpError := net.ListenUDP("udp4", resolveUdpAddress)
+	if listenUdpError != nil {
+		fmt.Println("error is", listenUdpError)
+		return
+	}
+
+	fmt.Println("UDP server up and listening on", addrToString)
+
+	defer func(listenUdpResponse *net.UDPConn) {
+		closeError := listenUdpResponse.Close()
+		if closeError != nil {
+			return
+		}
+	}(listenUdpResponse)
+
+	for {
+		// wait for UDP client to connect
+		buffer := make([]byte, 1024)
+		n, readFromUDPAddress, readFromUdpError := listenUdpResponse.ReadFromUDP(buffer)
+
+		if readFromUdpError != nil {
+			log.Fatal(readFromUdpError)
+		}
+
+		fmt.Println("\tReceived from UDP client :", string(buffer[:n]))
+
+		message := getResponseMessage(buffer[:n], network)
+
+		_, writeToUDPError := listenUdpResponse.WriteToUDP(message, readFromUDPAddress)
+
+		if writeToUDPError != nil {
+			log.Fatal(writeToUDPError)
+		}
+	}
+}
+
+// TODO: MAKE THIS
+func getResponseMessage(message []byte, Network *Network) []byte {
+	return nil
 }
 
 // https://neo-ngd.github.io/NEO-Tutorial/en/5-network/2-Developing_a_NEO_ping_using_Golang.html
