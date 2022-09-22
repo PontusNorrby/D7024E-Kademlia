@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"github.com/PontusNorrby/D7024E-Kademlia/src/kademlia"
 	"log"
+	"math/rand"
 	"net"
 	"strconv"
 )
@@ -14,33 +14,35 @@ var (
 )
 
 func main() {
-	//id := kademlia.NewRandomKademliaID()
-	//LocalIp := GetOutboundIP()
-	//selfContact := kademlia.NewContact(id, LocalIp.String())
-	//newRouteTable := kademlia.NewRoutingTable(selfContact)
+	//The newly created node gets a random id
+	selfId := kademlia.NewRandomKademliaID()
+	localIp := GetOutboundIP()
 
-	//This is the node every node is going to join
-	target := kademlia.NewRandomKademliaID()
-	contact := kademlia.NewContact(target, BaseIp+":"+strconv.Itoa(Port))
+	//Creates contacts for both the new node and the base node
+	selfContact := kademlia.NewContact(selfId, "")
+	baseContact := kademlia.NewContact(kademlia.NewRandomKademliaID(), BaseIp+":"+strconv.Itoa(Port))
 
-	LocalIp := GetOutboundIP()
-	// The current node, aka this node
-	currentContact := kademlia.NewContact(kademlia.NewRandomKademliaID(), LocalIp.String()+":"+strconv.Itoa(Port))
-	network := kademlia.NewNetwork(&currentContact)
+	newNetwork := kademlia.NewNetwork(&selfContact)
 
-	fmt.Println("My IP: ", LocalIp)
+	rand.Seed()
 
-	ping := network.SendPingMessage(&contact)
-	fmt.Println(ping)
-	fmt.Println("contact.String(): ", contact.String())
-	fmt.Println("BaseIp: ", BaseIp)
-	if contact.String() == BaseIp {
-		fmt.Println("Node IP: ", LocalIp.String())
+	if !newNetwork.SendPingMessage(&baseContact) {
+		//If you end up here the baseNode is dead?
+		panic("Can't connect to the network")
 	}
+	//Om pingen returnerar korrekt slumpad id så kan vi uppdatera egna bucketen.
+	//update own bucket since we got the correct random id back.
 
-	//A new node in the network
-	//func join network.
-	fmt.Printf("", network.RoutingTable)
+	//Här görs allt som ska hända när det är en ny nod och inte basnoden
+	if GetOutboundIP().String() != BaseIp {
+		selfContact.Address = localIp.String()
+		print(selfContact.Address + "\n")
+		newNetwork.RoutingTable.AddContact(baseContact)
+		//newNetwork.RoutingTable.FindClosestContacts(selfContact.ID, 20)
+		print(newNetwork.RoutingTable)
+	}
+	//Funktionalitet för basnoden
+
 }
 
 func GetOutboundIP() net.IP {
@@ -51,7 +53,7 @@ func GetOutboundIP() net.IP {
 	defer func(conn net.Conn) {
 		err := conn.Close()
 		if err != nil {
-
+			print("Closed connection")
 		}
 	}(conn)
 

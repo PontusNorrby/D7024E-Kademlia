@@ -16,6 +16,8 @@ func NewKademliaStruct() *Kademlia {
 
 func (kademlia *Kademlia) LookupContact(target *Contact) {
 	// TODO
+	//iterativ find_node
+
 }
 
 func (kademlia *Kademlia) LookupData(hash string) {
