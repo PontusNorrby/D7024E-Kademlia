@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	BaseIp string = "172.20.128.2"
+	BaseIp string = "172.20.0.2"
 	Port   int    = 3000
 )
 
@@ -23,6 +23,11 @@ func main() {
 	baseContact := kademlia.NewContact(kademlia.NewRandomKademliaID(), BaseIp+":"+strconv.Itoa(Port))
 
 	newNetwork := kademlia.NewNetwork(&selfContact)
+
+	LocalIp := GetOutboundIP()
+	// The current node, aka this node
+	currentContact := kademlia.NewContact(kademlia.NewRandomKademliaID(), LocalIp.String())
+	network := kademlia.NewNetwork(&currentContact)
 
 	rand.Seed()
 
