@@ -146,7 +146,6 @@ func (network *Network) SendPingMessage(contact *Contact) bool {
 	}
 	fmt.Println("\tResponse from server:", string(buffer[:n]))
 	handlePingResponse(buffer[:n], network)
-	//TODO: update buckets after response
 	return true
 }
 
