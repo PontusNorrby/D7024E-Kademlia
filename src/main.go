@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/PontusNorrby/D7024E-Kademlia/src/kademlia"
 	"log"
 	"net"
@@ -21,6 +22,9 @@ func main() {
 	selfContact := kademlia.NewContact(selfId, "")
 	baseContact := kademlia.NewContact(kademlia.NewRandomKademliaID(), BaseIp+":"+strconv.Itoa(Port))
 
+	fmt.Println("My IP: ", localIp)
+	fmt.Println("Base IP: ", BaseIp)
+
 	newNetwork := kademlia.NewNetwork(&selfContact)
 
 	if GetOutboundIP().String() != BaseIp {
@@ -31,11 +35,14 @@ func main() {
 		print(newNetwork.RoutingTable)
 	}
 
-	if !newNetwork.SendPingMessage(&baseContact) {
-		//If you end up here the baseNode is dead.
-		panic("Can't connect to the network base node is down")
+	if localIp.String() != BaseIp {
+		if !newNetwork.SendPingMessage(&baseContact) {
+			//If you end up here the baseNode is dead.
+			panic("Can't connect to the network base node is down")
+		}
 	}
 
+	newNetwork.Listen(BaseIp, Port)
 }
 
 func GetOutboundIP() net.IP {

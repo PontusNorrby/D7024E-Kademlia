@@ -131,10 +131,14 @@ func (network *Network) SendPingMessage(contact *Contact) bool {
 	defer conn.Close()
 
 	// Message builder
-	startMessage := []byte(newPing().startMessage + " ")
+	startMessage := []byte("Ping" + " ")
 	body, err := json.Marshal(network.CurrentNode)
+	if err != nil {
+		log.Println(err)
+		//panic(err)
+	}
 	message := append(startMessage, body...)
-	conn.Write([]byte(message))
+	conn.Write(message)
 
 	buffer := make([]byte, 4096)
 	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
