@@ -6,11 +6,13 @@ import (
 	"log"
 	"net"
 	"strconv"
+	"time"
 )
 
 var (
-	BaseIp string = "172.20.0.2"
-	Port   int    = 3000
+	BaseIp    string = "172.20.0.2"
+	Port      int    = 3000
+	OtherPort int    = 3001
 )
 
 func main() {
@@ -42,7 +44,12 @@ func main() {
 		}
 	}
 
-	newNetwork.Listen(BaseIp, Port)
+	go newNetwork.Listen(BaseIp, Port)
+
+	for {
+		time.Sleep(5 * time.Second)
+	}
+
 }
 
 func GetOutboundIP() net.IP {

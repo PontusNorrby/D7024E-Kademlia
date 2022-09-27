@@ -1,16 +1,18 @@
 package kademlia
 
 type Kademlia struct {
-	m map[KademliaID]Value
+	m       map[KademliaID]Value
+	Network *Network
 }
 
 type Value struct {
 	data []byte
 }
 
-func NewKademliaStruct() *Kademlia {
+func NewKademliaStruct(network *Network) *Kademlia {
 	kademlia := &Kademlia{}
 	kademlia.m = make(map[KademliaID]Value)
+	kademlia.Network = network
 	return kademlia
 }
 

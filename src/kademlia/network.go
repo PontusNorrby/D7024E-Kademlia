@@ -11,13 +11,12 @@ import (
 )
 
 type Network struct {
-	Kademlia     *Kademlia
 	CurrentNode  *Contact
 	RoutingTable *RoutingTable
 }
 
 func NewNetwork(node *Contact) *Network {
-	return &Network{NewKademliaStruct(), node, NewRoutingTable(*node)}
+	return &Network{node, NewRoutingTable(*node)}
 }
 
 func (network *Network) Listen(ip string, port int) {
@@ -52,7 +51,7 @@ func (network *Network) Listen(ip string, port int) {
 		}
 
 		fmt.Println("\tReceived from UDP client :", string(buffer[:n]))
-
+		fmt.Println("Buffer: ", buffer[:n])
 		message := getResponseMessage(buffer[:n], network)
 
 		_, writeToUDPError := listenUdpResponse.WriteToUDP(message, readFromUDPAddress)
@@ -67,6 +66,7 @@ func (network *Network) Listen(ip string, port int) {
 func getResponseMessage(message []byte, network *Network) []byte {
 	messageList := strings.Split(string(message), " ")
 	if messageList[0] == "Ping" {
+		fmt.Println("Recieved Ping")
 		body, err := json.Marshal(network.CurrentNode)
 		if err != nil {
 			log.Println(err)
@@ -161,7 +161,6 @@ func handlePingResponse(message []byte, network *Network) {
 		var contact *Contact
 		json.Unmarshal(message, &contact)
 		network.RoutingTable.AddContact(*contact)
-
 	}
 	// fmt.Println("ping response: ", network.routingTable)
 }
