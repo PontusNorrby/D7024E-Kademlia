@@ -28,6 +28,7 @@ func (network *Network) Listen(ip string, port int) {
 	}
 	listenUdpResponse, listenUdpError := net.ListenUDP("udp4", resolveUdpAddress)
 	if listenUdpError != nil {
+		//TODO: We end up here on everything other than first node...
 		fmt.Println("error is", listenUdpError)
 		return
 	}
@@ -125,7 +126,6 @@ func extractContact(message []byte, network *Network) []byte {
 func (network *Network) SendPingMessage(contact *Contact) bool {
 	conn, err3 := net.Dial("udp4", contact.Address)
 	if err3 != nil {
-		fmt.Println("Error 1")
 		log.Println(err3)
 	}
 	defer conn.Close()
@@ -144,7 +144,6 @@ func (network *Network) SendPingMessage(contact *Contact) bool {
 	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
 	n, err := conn.Read(buffer)
 	if err != nil {
-		fmt.Println("Error 2")
 		fmt.Println(err)
 		return false
 	}
