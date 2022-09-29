@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/PontusNorrby/D7024E-Kademlia/src/kademlia"
 	"log"
 	"math/rand"
@@ -37,10 +36,8 @@ func main() {
 
 		kademliaPing := kademlia.NewNetwork(&selfContact).SendPingMessage(&baseContact)
 		if kademliaPing {
-			fmt.Println("Test in basenode ping")
 			Port = rand.Intn(65535-1024) + 1024
 		}
-		fmt.Println("missade pingen?")
 		selfContact = kademlia.NewContact(kademlia.NewRandomKademliaID(), localIP.String()+":"+strconv.Itoa(Port))
 		baseContact = kademlia.NewContact(kademlia.NewRandomKademliaID(), localIP.String()+":"+strconv.Itoa(Port))
 		kademliaStruct = kademlia.NewKademliaStruct(kademlia.NewNetwork(&selfContact))
