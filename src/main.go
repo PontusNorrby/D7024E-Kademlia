@@ -4,47 +4,59 @@ import (
 	"fmt"
 	"github.com/PontusNorrby/D7024E-Kademlia/src/kademlia"
 	"log"
+	"math/rand"
 	"net"
 	"strconv"
 	"time"
 )
 
 var (
-	BaseIp    string = "172.20.0.2"
-	Port      int    = 3000
-	OtherPort int    = 3001
+	BaseIp         string = "172.20.0.2"
+	Port           int    = 3000
+	kademliaStruct *kademlia.Kademlia
+	//OtherPort int    = 3001
 )
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
+
 	//The newly created node gets a random id
 	selfId := kademlia.NewRandomKademliaID()
-	localIp := GetOutboundIP()
+	localIP := GetOutboundIP()
 
 	//Creates contacts for both the new node and the base node
 	selfContact := kademlia.NewContact(selfId, "")
 	baseContact := kademlia.NewContact(kademlia.NewRandomKademliaID(), BaseIp+":"+strconv.Itoa(Port))
+	//fmt.Println("Base IP: ", BaseIp)
 
-	fmt.Println("My IP: ", localIp)
-	fmt.Println("Base IP: ", BaseIp)
+	//testStoreValue := []byte("HelloWorld")
+	/*newKademlia := kademlia.NewKademliaStruct(newNetwork)
+	newKademlia.Store(testStoreValue)*/
 
-	newNetwork := kademlia.NewNetwork(&selfContact)
+	if localIP.String() == BaseIp {
 
-	if GetOutboundIP().String() != BaseIp {
-		selfContact.Address = localIp.String()
-		print(selfContact.Address + "\n")
-
-		newNetwork.RoutingTable.AddContact(baseContact)
-		print(newNetwork.RoutingTable)
-	}
-
-	if localIp.String() != BaseIp {
-		if !newNetwork.SendPingMessage(&baseContact) {
-			//If you end up here the baseNode is dead.
-			panic("Can't connect to the network base node is down")
+		kademliaPing := kademlia.NewNetwork(&selfContact).SendPingMessage(&baseContact)
+		if kademliaPing {
+			fmt.Println("Test in basenode ping")
+			Port = rand.Intn(65535-1024) + 1024
 		}
+		fmt.Println("missade pingen?")
+		selfContact = kademlia.NewContact(kademlia.NewRandomKademliaID(), localIP.String()+":"+strconv.Itoa(Port))
+		baseContact = kademlia.NewContact(kademlia.NewRandomKademliaID(), localIP.String()+":"+strconv.Itoa(Port))
+		kademliaStruct = kademlia.NewKademliaStruct(kademlia.NewNetwork(&selfContact))
+	} else {
+		//baseContact = kademlia.NewContact(kademlia.NewRandomKademliaID(), localIP.String()+":"+strconv.Itoa(Port))
+		selfContact = kademlia.NewContact(kademlia.NewRandomKademliaID(), localIP.String()+":"+strconv.Itoa(Port))
+		kademliaStruct = kademlia.NewKademliaStruct(kademlia.NewNetwork(&selfContact))
+		if !kademliaStruct.Network.SendPingMessage(&baseContact) {
+			panic("Can't connect to baseNode")
+		}
+		Port = rand.Intn(65535-1024) + 1024
 	}
 
-	go newNetwork.Listen(BaseIp, Port)
+	//newNetwork.SendStoreMessage(testStoreValue)
+
+	go kademliaStruct.Network.Listen(BaseIp, Port)
 
 	for {
 		time.Sleep(5 * time.Second)
