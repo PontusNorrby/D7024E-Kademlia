@@ -7,7 +7,6 @@ import (
 	"net"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type Network struct {
@@ -86,7 +85,8 @@ func getResponseMessage(message []byte, network *Network) []byte {
 		//TODO
 
 	} else if messageList[0] == "StoreMessage" {
-		//TODO
+		fmt.Println("Received StoreMessage")
+		//Save the byte in the kademlia map... i guess?
 
 	}
 	return []byte("Error: Invalid RPC protocol")
@@ -126,6 +126,7 @@ func extractContact(message []byte, network *Network) []byte {
 func (network *Network) SendPingMessage(contact *Contact) bool {
 	conn, err3 := net.Dial("udp4", contact.Address)
 	if err3 != nil {
+		fmt.Println("test123")
 		log.Println(err3)
 	}
 	defer conn.Close()
@@ -141,9 +142,10 @@ func (network *Network) SendPingMessage(contact *Contact) bool {
 	conn.Write(message)
 
 	buffer := make([]byte, 4096)
-	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+	//conn.SetReadDeadline(time.Now().Add(2 * time.Second))
 	n, err := conn.Read(buffer)
 	if err != nil {
+		fmt.Println("test5")
 		fmt.Println(err)
 		return false
 	}
@@ -172,6 +174,41 @@ func (network *Network) SendFindDataMessage(hash string) {
 	// TODO
 }
 
-func (network *Network) SendStoreMessage(data []byte) {
+/*func (network *Network) SendStoreMessage(data []byte) bool {
 	// TODO
+	//Maybe a check if the data is too big to store?
+	conn, err3 := net.Dial("udp4", network.CurrentNode.Address)
+	if err3 != nil {
+		log.Println(err3)
+	}
+	defer conn.Close()
+	// Message builder
+	startMessage := []byte("StoreMessage" + " ")
+	body := data
+	message := append(startMessage, body...)
+	conn.Write(message)
+
+	buffer := make([]byte, 4096)
+	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+	n, err := conn.Read(buffer)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+	fmt.Println("\tResponse from server:", string(buffer[:n]))
+	//Ska implementeras en hantering av store efter när algorithmen för att hitta
+	//vart value ska sparas så rätt bucket uppdateras.
+	//handleStoreResponse(buffer[:n], network)
+	return true
 }
+
+func handleStoreResponse(message []byte, network *Network) {
+	if string(message[:5]) == "Error" {
+		log.Println(string(message))
+		return
+	} else {
+		var contact *Contact
+		json.Unmarshal(message, &contact)
+		network.RoutingTable.AddContact(*contact)
+	}
+}*/
