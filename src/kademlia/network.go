@@ -7,6 +7,7 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Network struct {
@@ -122,34 +123,32 @@ func extractContact(message []byte, network *Network) []byte {
 }
 
 // https://neo-ngd.github.io/NEO-Tutorial/en/5-network/2-Developing_a_NEO_ping_using_Golang.html
-// TODO: FIX THIS!
 func (network *Network) SendPingMessage(contact *Contact) bool {
+	fmt.Println("123,")
 	conn, err3 := net.Dial("udp4", contact.Address)
 	if err3 != nil {
-		fmt.Println("test123")
 		log.Println(err3)
 	}
+
 	defer conn.Close()
 
-	// Message builder
+	//Message builder
 	startMessage := []byte("Ping" + " ")
-	body, err := json.Marshal(network.CurrentNode)
-	if err != nil {
-		log.Println(err)
-		//panic(err)
+	body, err5 := json.Marshal(network.CurrentNode)
+	if err5 != nil {
+		fmt.Println("test5")
+		log.Println(err5)
 	}
 	message := append(startMessage, body...)
-	conn.Write(message)
 
+	conn.Write(message)
 	buffer := make([]byte, 4096)
-	//conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
 	n, err := conn.Read(buffer)
 	if err != nil {
-		fmt.Println("test5")
-		fmt.Println(err)
 		return false
 	}
-	fmt.Println("\tResponse from server:", string(buffer[:n]))
+	// fmt.Println("\tResponse from server:", string(buffer[:n]))
 	handlePingResponse(buffer[:n], network)
 	return true
 }
@@ -162,6 +161,7 @@ func handlePingResponse(message []byte, network *Network) {
 		var contact *Contact
 		json.Unmarshal(message, &contact)
 		network.RoutingTable.AddContact(*contact)
+
 	}
 	// fmt.Println("ping response: ", network.routingTable)
 }
