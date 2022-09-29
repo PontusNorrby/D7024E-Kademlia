@@ -73,14 +73,28 @@ func getResponseMessage(message []byte, network *Network) []byte {
 			log.Println(err)
 			panic(err)
 		}
-		ex := extractContact([]byte(messageList[1]), network)
-		if ex != nil {
-			return ex
+		extraction := extractContact([]byte(messageList[1]), network)
+		if extraction != nil {
+			return extraction
 		}
 		return body
 
 	} else if messageList[0] == "FindContact" {
-		//TODO
+		var id *KademliaID
+		UnmarshalError := json.Unmarshal([]byte(messageList[1]), &id)
+		if UnmarshalError != nil {
+			println("Error is ", UnmarshalError)
+			return nil
+		}
+		extraction := extractContact([]byte(messageList[2]), network)
+		if extraction != nil {
+			fmt.Println(extraction)
+			return extraction
+		}
+		closestNodes := network.RoutingTable.FindClosestContacts(id, 20)
+		closestNodes = append(closestNodes, *network.CurrentNode)
+		body, _ := json.Marshal(closestNodes)
+		return body
 
 	} else if messageList[0] == "FindData" {
 		//TODO
@@ -122,7 +136,7 @@ func extractContact(message []byte, network *Network) []byte {
 	return nil
 }
 
-// https://neo-ngd.github.io/NEO-Tutorial/en/5-network/2-Developing_a_NEO_ping_using_Golang.html
+// SendPingMessage https://neo-ngd.github.io/NEO-Tutorial/en/5-network/2-Developing_a_NEO_ping_using_Golang.html
 func (network *Network) SendPingMessage(contact *Contact) bool {
 	fmt.Println("123,")
 	conn, err3 := net.Dial("udp4", contact.Address)
