@@ -19,7 +19,7 @@ func NewNetwork(node *Contact) *Network {
 	return &Network{node, NewRoutingTable(*node)}
 }
 
-func (network *Network) Listen(ip string, port int) {
+func (network *Network) Listen(ip string, port int, kademliaStruct *Kademlia) {
 	addrToString := strings.Join([]string{ip, strconv.Itoa(port)}, ":")
 	resolveUdpAddress, resolveUdpError := net.ResolveUDPAddr("udp4", addrToString)
 	if resolveUdpError != nil {
@@ -53,7 +53,7 @@ func (network *Network) Listen(ip string, port int) {
 
 		fmt.Println("\tReceived from UDP client :", string(buffer[:n]))
 		fmt.Println("Buffer: ", buffer[:n])
-		message := getResponseMessage(buffer[:n], network)
+		message := getResponseMessage(buffer[:n], network, kademliaStruct)
 
 		_, writeToUDPError := listenUdpResponse.WriteToUDP(message, readFromUDPAddress)
 
@@ -64,7 +64,7 @@ func (network *Network) Listen(ip string, port int) {
 }
 
 // TODO: COMPLETE THIS
-func getResponseMessage(message []byte, network *Network) []byte {
+func getResponseMessage(message []byte, network *Network, kademliaStruct *Kademlia) []byte {
 	messageList := strings.Split(string(message), " ")
 	if messageList[0] == "Ping" {
 		fmt.Println("Received Ping")
@@ -87,8 +87,15 @@ func getResponseMessage(message []byte, network *Network) []byte {
 
 	} else if messageList[0] == "StoreMessage" {
 		fmt.Println("Received StoreMessage")
-		//Save the byte in the kademlia map... i guess?
-
+		var storeData *[]byte
+		json.Unmarshal([]byte(messageList[1]), &storeData)
+		kademliaStruct.Store(*storeData)
+		ex := extractContact([]byte(messageList[2]), network)
+		if ex != nil {
+			return ex
+		}
+		body, _ := json.Marshal(network.CurrentNode)
+		return body
 	}
 	return []byte("Error: Invalid RPC protocol")
 }

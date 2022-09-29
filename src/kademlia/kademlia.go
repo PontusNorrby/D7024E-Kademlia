@@ -26,6 +26,9 @@ func (kademlia *Kademlia) LookupData(hash string) {
 	// TODO
 }
 
-func (kademlia *Kademlia) Store(data []byte) {
-	return
+func (kademlia *Kademlia) Store(data []byte) KademliaID {
+	storeId := NewKademliaID(string(data))
+	dataStore := Value{data: data}
+	kademlia.m[*storeId] = dataStore
+	return KademliaID{}
 }

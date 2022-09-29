@@ -53,7 +53,7 @@ func main() {
 
 	//newNetwork.SendStoreMessage(testStoreValue)
 
-	go kademliaStruct.Network.Listen(localIP.String(), Port)
+	go kademliaStruct.Network.Listen(localIP.String(), Port, kademliaStruct)
 
 	for {
 		time.Sleep(5 * time.Second)
