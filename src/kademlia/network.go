@@ -67,7 +67,7 @@ func (network *Network) Listen(ip string, port int) {
 func getResponseMessage(message []byte, network *Network) []byte {
 	messageList := strings.Split(string(message), " ")
 	if messageList[0] == "Ping" {
-		fmt.Println("Recieved Ping")
+		fmt.Println("Received Ping")
 		body, err := json.Marshal(network.CurrentNode)
 		if err != nil {
 			log.Println(err)
