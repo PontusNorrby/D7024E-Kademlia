@@ -187,43 +187,63 @@ func handlePingResponse(message []byte, network *Network) {
 	// fmt.Println("ping response: ", network.routingTable)
 }
 
-func (network *Network) SendFindContactMessage(contact *Contact) {
-	// TODO
+func (network *Network) SendFindContactMessage(contact *Contact, searchID *KademliaID) []Contact {
+	conn, err3 := net.Dial("udp4", contact.Address)
+	if err3 != nil {
+		log.Println(err3)
+	}
+	defer conn.Close()
+
+	//Message builder
+	startMessage := []byte("FindContact" + " ")
+	body, err5 := json.Marshal(searchID)
+	if err5 != nil {
+		log.Println(err5)
+	}
+	message := append(startMessage, body...)
+
+	conn.Write(message)
+	buffer := make([]byte, 4096)
+	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+	n, err := conn.Read(buffer)
+	if err != nil {
+		return nil
+	}
+	return handleFindContactResponse(buffer[:n], network)
 }
 
 func (network *Network) SendFindDataMessage(hash string) {
 	// TODO
 }
 
-/*func (network *Network) SendStoreMessage(data []byte) bool {
-	// TODO
-	//Maybe a check if the data is too big to store?
-	conn, err3 := net.Dial("udp4", network.CurrentNode.Address)
-	if err3 != nil {
-		log.Println(err3)
+func handleFindContactResponse(message []byte, network *Network) []Contact {
+	if string(message[:5]) == "Error" {
+		log.Println(string(message))
+		return nil
+	} else {
+		var foundContacts []Contact
+		var usableContacts []Contact
+		json.Unmarshal(message, &foundContacts)
+		for _, foundContact := range foundContacts {
+			if contactUsability(&foundContact, network) {
+				if network.SendPingMessage(&foundContact) {
+					usableContacts = append(usableContacts, foundContact)
+				}
+			}
+		}
+		return usableContacts
 	}
-	defer conn.Close()
-	// Message builder
-	startMessage := []byte("StoreMessage" + " ")
-	body := data
-	message := append(startMessage, body...)
-	conn.Write(message)
+}
 
-	buffer := make([]byte, 4096)
-	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
-	n, err := conn.Read(buffer)
-	if err != nil {
-		fmt.Println(err)
+func contactUsability(contact *Contact, network *Network) bool {
+	//Returns false if address empty or checking on it's own ID.
+	if contact.Address == "" || contact.ID == network.CurrentNode.ID {
 		return false
 	}
-	fmt.Println("\tResponse from server:", string(buffer[:n]))
-	//Ska implementeras en hantering av store efter när algorithmen för att hitta
-	//vart value ska sparas så rätt bucket uppdateras.
-	//handleStoreResponse(buffer[:n], network)
 	return true
 }
 
-func handleStoreResponse(message []byte, network *Network) {
+/*func handleStoreResponse(message []byte, network *Network) {
 	if string(message[:5]) == "Error" {
 		log.Println(string(message))
 		return

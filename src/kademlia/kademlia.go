@@ -1,5 +1,7 @@
 package kademlia
 
+const alphaValue = 3
+
 type Kademlia struct {
 	m       map[KademliaID]Value
 	Network *Network
@@ -16,9 +18,18 @@ func NewKademliaStruct(network *Network) *Kademlia {
 	return kademlia
 }
 
-func (kademlia *Kademlia) LookupContact(target *Contact) {
+func (kademlia *Kademlia) LookupContact(target *KademliaID) {
 	// TODO
-	//iterativ find_node
+	closerContacts := kademlia.Network.RoutingTable.FindClosestContacts(target, bucketSize)
+	newRouteFinding := NewRoutingTable(*kademlia.Network.CurrentNode)
+	minLength := minVal(alphaValue, len(closerContacts))
+	for i := 0; i < minLength; i++ {
+		newContact := closerContacts[i]
+		contactsFetched := kademlia.Network.SendFindContactMessage(&newContact, target)
+		for _, tempContact := range contactsFetched {
+			newRouteFinding.AddContact(tempContact)
+		}
+	}
 
 }
 
@@ -30,5 +41,12 @@ func (kademlia *Kademlia) Store(data []byte) KademliaID {
 	storeId := NewKademliaID(string(data))
 	dataStore := Value{data: data}
 	kademlia.m[*storeId] = dataStore
-	return KademliaID{}
+	return *storeId
+}
+
+func minVal(x int, y int) int {
+	if x <= y {
+		return x
+	}
+	return y
 }
