@@ -1,10 +1,13 @@
 package main
 
 import (
+	"fmt"
+	"github.com/PontusNorrby/D7024E-Kademlia/src/cli"
 	"github.com/PontusNorrby/D7024E-Kademlia/src/kademlia"
 	"log"
 	"math/rand"
 	"net"
+	"os"
 	"strconv"
 	"time"
 )
@@ -54,6 +57,7 @@ func main() {
 	//newNetwork.SendStoreMessage(testStoreValue)
 
 	go kademliaStruct.Network.Listen(localIP.String(), Port, kademliaStruct)
+	go cli.StartCLI(nodeShutDown, kademliaStruct)
 
 	for {
 		time.Sleep(5 * time.Second)
@@ -76,4 +80,9 @@ func GetOutboundIP() net.IP {
 	localAddr := conn.LocalAddr().(*net.UDPAddr)
 
 	return localAddr.IP
+}
+
+func nodeShutDown() {
+	fmt.Println("Shutting down the node...")
+	os.Exit(0)
 }
