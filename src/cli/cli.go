@@ -16,7 +16,7 @@ func run(userInput func() string, nodeShutDown func(), kademlia *kademlia.Kademl
 	for {
 		input := userInput()
 		if input == "exit" {
-			fmt.Println("You are going to exit, to confirm please write yes >")
+			fmt.Println("You are going to exit, to confirm please write yes else, press enter")
 			confirmation := userInput()
 			if confirmation == "yes" {
 				nodeShutDown()
