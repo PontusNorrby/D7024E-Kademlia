@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"github.com/PontusNorrby/D7024E-Kademlia/src/cli"
 	"github.com/PontusNorrby/D7024E-Kademlia/src/kademlia"
-	"log"
 	"math/rand"
 	"net"
 	"os"
@@ -69,12 +67,12 @@ func main() {
 func GetOutboundIP() net.IP {
 	conn, err := net.Dial("udp", "8.8.8.8:80")
 	if err != nil {
-		log.Fatal(err)
+		//log.Fatal(err)
 	}
 	defer func(conn net.Conn) {
 		err := conn.Close()
 		if err != nil {
-			print("Closed connection")
+			//print("Closed connection")
 		}
 	}(conn)
 
@@ -84,6 +82,6 @@ func GetOutboundIP() net.IP {
 }
 
 func nodeShutDown() {
-	fmt.Println("Shutting down the node...")
+	//fmt.Println("Shutting down the node...")
 	os.Exit(0)
 }

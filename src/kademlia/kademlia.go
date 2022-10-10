@@ -78,7 +78,7 @@ func (kademlia *Kademlia) storeHelp(data []byte) ([]*KademliaID, string) {
 		go func(contact Contact) {
 			res := kademlia.Network.SendStoreMessage(data, &contact, kademlia)
 			if res {
-
+				storedNodes = append(storedNodes, contact.ID)
 			}
 		}(contact)
 	}

@@ -23,13 +23,13 @@ func (network *Network) Listen(ip string, port int, kademliaStruct *Kademlia) {
 	addrToString := strings.Join([]string{ip, strconv.Itoa(port)}, ":")
 	resolveUdpAddress, resolveUdpError := net.ResolveUDPAddr("udp4", addrToString)
 	if resolveUdpError != nil {
-		fmt.Println(resolveUdpError)
+		//fmt.Println(resolveUdpError)
 		panic(resolveUdpError)
 	}
 	listenUdpResponse, listenUdpError := net.ListenUDP("udp4", resolveUdpAddress)
 	if listenUdpError != nil {
 		//TODO: We end up here on everything other than first node...
-		fmt.Println("error is", listenUdpError)
+		//fmt.Println("error is", listenUdpError)
 		return
 	}
 
@@ -51,8 +51,8 @@ func (network *Network) Listen(ip string, port int, kademliaStruct *Kademlia) {
 			log.Fatal(readFromUdpError)
 		}
 
-		fmt.Println("\tReceived from UDP client :", string(buffer[:n]))
-		fmt.Println("Buffer: ", buffer[:n])
+		//fmt.Println("\tReceived from UDP client :", string(buffer[:n]))
+		//fmt.Println("Buffer: ", buffer[:n])
 		message := getResponseMessage(buffer[:n], network, kademliaStruct)
 
 		_, writeToUDPError := listenUdpResponse.WriteToUDP(message, readFromUDPAddress)
@@ -67,10 +67,10 @@ func (network *Network) Listen(ip string, port int, kademliaStruct *Kademlia) {
 func getResponseMessage(message []byte, network *Network, kademliaStruct *Kademlia) []byte {
 	messageList := strings.Split(string(message), " ")
 	if messageList[0] == "Ping" {
-		fmt.Println("Received Ping")
+		//fmt.Println("Received Ping")
 		body, err := json.Marshal(network.CurrentNode)
 		if err != nil {
-			log.Println(err)
+			//log.Println(err)
 			panic(err)
 		}
 		extraction := extractContact([]byte(messageList[1]), network)
@@ -116,7 +116,7 @@ func getResponseMessage(message []byte, network *Network, kademliaStruct *Kademl
 		return []byte("CONT" + string(body))*/
 
 	} else if messageList[0] == "StoreMessage" {
-		fmt.Println("Received StoreMessage")
+		//fmt.Println("Received StoreMessage")
 		var storeData *[]byte
 		json.Unmarshal([]byte(messageList[1]), &storeData)
 		kademliaStruct.Store(*storeData)
@@ -161,7 +161,7 @@ func extractContact(message []byte, network *Network) []byte {
 
 // SendPingMessage https://neo-ngd.github.io/NEO-Tutorial/en/5-network/2-Developing_a_NEO_ping_using_Golang.html
 func (network *Network) SendPingMessage(contact *Contact) bool {
-	fmt.Println("123,")
+	//fmt.Println("123,")
 	conn, err3 := net.Dial("udp4", contact.Address)
 	if err3 != nil {
 		log.Println(err3)
@@ -173,7 +173,7 @@ func (network *Network) SendPingMessage(contact *Contact) bool {
 	startMessage := []byte("Ping" + " ")
 	body, err5 := json.Marshal(network.CurrentNode)
 	if err5 != nil {
-		fmt.Println("test5")
+		//fmt.Println("test5")
 		log.Println(err5)
 	}
 	message := append(startMessage, body...)
@@ -220,17 +220,17 @@ func (network *Network) SendFindContactMessage(contact *Contact, searchID *Kadem
 
 	conn.Write(message)
 	buffer := make([]byte, 4096)
+	//fmt.Println("test")
 	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
 	n, err := conn.Read(buffer)
 	if err != nil {
 		return nil
 	}
+	//fmt.Println("\tResponse from server:", string(buffer[:n]))
 	return handleFindContactResponse(buffer[:n], network)
 }
 
 func (network *Network) SendFindDataMessage(hash string, contact *Contact) string {
-	// TODO
-
 	conn, err3 := net.Dial("udp4", contact.Address)
 	if err3 != nil {
 		log.Println(err3)
