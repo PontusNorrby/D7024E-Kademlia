@@ -97,7 +97,23 @@ func getResponseMessage(message []byte, network *Network, kademliaStruct *Kademl
 		return body
 
 	} else if messageList[0] == "FindData" {
-		//TODO
+		//TODO need kademlia.lookup(data)
+		/*var hash *KademliaID
+		json.Unmarshal([]byte(messageList[1]), &hash)
+		ex := extractContact([]byte(messageList[2]), network)
+		if ex != nil {
+			fmt.Println(ex)
+			return ex
+		}
+		lookupValue := kademlia.LookupData(*hash)
+		if lookupValue != nil {
+			body, _ := json.Marshal(network.CurrentNode)
+			return []byte("VALU;" + string(lookupValue) + " " + string(body))
+		}
+		resClosestNodes := network.RoutingTable.FindClosestContacts(hash, 4096)
+		resClosestNodes = append(resClosestNodes, *network.CurrentNode)
+		body, _ := json.Marshal(resClosestNodes)
+		return []byte("CONT" + string(body))*/
 
 	} else if messageList[0] == "StoreMessage" {
 		fmt.Println("Received StoreMessage")
@@ -212,8 +228,57 @@ func (network *Network) SendFindContactMessage(contact *Contact, searchID *Kadem
 	return handleFindContactResponse(buffer[:n], network)
 }
 
-func (network *Network) SendFindDataMessage(hash string) {
+func (network *Network) SendFindDataMessage(hash string, contact *Contact) string {
 	// TODO
+
+	conn, err3 := net.Dial("udp4", contact.Address)
+	if err3 != nil {
+		log.Println(err3)
+		return "ERROR"
+	}
+	defer conn.Close()
+
+	//Message builder
+	body, _ := json.Marshal(hash)
+	startMessage := []byte("FindData" + " " + string(body) + " ")
+	body2, _ := json.Marshal(network.CurrentNode)
+	message := append(startMessage, body2...)
+
+	conn.Write(message)
+	buffer := make([]byte, 4096)
+	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+	n, err := conn.Read(buffer)
+	if err != nil {
+		return "ERROR"
+	}
+	// fmt.Println("\tResponse from server:", string(buffer[:n]))
+	return handleSendDataResponse(buffer[:n], network)
+
+}
+
+func handleSendDataResponse(message []byte, network *Network) string {
+	if string(message[:5]) == "Error" {
+		log.Println(string(message))
+		return string(message)
+	} else {
+		if string(message[:4]) == "VALU" {
+			resp := strings.Split(string(message[5:]), " ")
+			var contact *Contact
+			json.Unmarshal([]byte(resp[1]), &contact)
+			if contactUsability(contact, network) {
+				network.RoutingTable.AddContact(*contact)
+			}
+			return resp[0]
+		}
+		var foundContact []Contact
+		json.Unmarshal(message, &foundContact)
+		for _, foundContact := range foundContact {
+			if contactUsability(&foundContact, network) {
+				network.SendPingMessage(&foundContact)
+			}
+		}
+		return ""
+	}
 }
 
 func handleFindContactResponse(message []byte, network *Network) []Contact {
