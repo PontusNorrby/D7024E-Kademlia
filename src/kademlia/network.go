@@ -243,13 +243,41 @@ func contactUsability(contact *Contact, network *Network) bool {
 	return true
 }
 
-/*func handleStoreResponse(message []byte, network *Network) {
+func (network *Network) SendStoreMessage(data []byte, contact *Contact, kademlia *Kademlia) bool {
+	conn, err3 := net.Dial("udp4", contact.Address)
+	if err3 != nil {
+		log.Println(err3)
+		return false
+	}
+	defer conn.Close()
+	//Message builder
+	startMessage := []byte("StoreMessage" + " ")
+	body, err5 := json.Marshal(data)
+	if err5 != nil {
+		log.Println(err5)
+	}
+	message := append(startMessage, body...)
+	conn.Write(message)
+	buffer := make([]byte, 4096)
+	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+	n, err := conn.Read(buffer)
+	if err != nil {
+		return false
+	}
+	// fmt.Println("\tResponse from server:", string(buffer[:n]))
+	handleStoreResponse(buffer[:n], network)
+	return true
+}
+
+func handleStoreResponse(message []byte, network *Network) {
 	if string(message[:5]) == "Error" {
 		log.Println(string(message))
 		return
 	} else {
-		var contact *Contact
-		json.Unmarshal(message, &contact)
-		network.RoutingTable.AddContact(*contact)
+		var storeContact *Contact
+		json.Unmarshal(message, &storeContact)
+		if contactUsability(storeContact, network) {
+			network.RoutingTable.AddContact(*storeContact)
+		}
 	}
-}*/
+}
