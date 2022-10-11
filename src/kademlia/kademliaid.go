@@ -2,6 +2,7 @@ package kademlia
 
 import (
 	"encoding/hex"
+	"fmt"
 	"math/rand"
 )
 
@@ -21,6 +22,19 @@ func NewKademliaID(data string) *KademliaID {
 	}
 
 	return &newKademliaID
+}
+
+func ToKademliaID(data string) *KademliaID {
+	if len(data) < 40 {
+		return nil
+	}
+	res, err := hex.DecodeString(data)
+	if err != nil {
+		fmt.Println("FAILED TO DECODE KADEMLIA ID", err)
+		return nil
+	} else {
+		return (*KademliaID)(res)
+	}
 }
 
 // NewRandomKademliaID returns a new instance of a random KademliaID,

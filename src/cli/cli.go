@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/PontusNorrby/D7024E-Kademlia/src/kademlia"
+	. "github.com/PontusNorrby/D7024E-Kademlia/src/kademlia"
 	"os"
 	"strings"
 )
@@ -35,17 +36,23 @@ func run(userInput func() string, nodeShutDown func(), kademlia *kademlia.Kademl
 	}
 }
 
-// TODO
-func get(userInput func() string, k *kademlia.Kademlia) {
-	fmt.Println("please insert the value you want to get")
-
+func get(input func() string, kademlia *kademlia.Kademlia) {
+	fmt.Println("insert the ID you want to get")
+	stringValue := input()
+	id := ToKademliaID(stringValue)
+	value, contact := kademlia.GetData(id)
+	if value == nil {
+		fmt.Println("value not found")
+		return
+	}
+	fmt.Println("\""+*value+"\" found at node", contact.ID)
 }
 
-func store(userInput func() string, store func(data []byte) kademlia.KademliaID) {
-	fmt.Println("please insert the value you want to store")
-	value := userInput()
-	fmt.Println("Stored in nodes: ", store([]byte(value)))
-
+func store(input func() string, store func(data []byte) kademlia.KademliaID) {
+	fmt.Println("What value do you want to store? ")
+	value := input()
+	storeID := store([]byte(value))
+	fmt.Println("the value stored in nodes: ", storeID)
 }
 
 func helpList() {

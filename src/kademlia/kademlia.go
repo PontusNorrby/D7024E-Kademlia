@@ -70,7 +70,7 @@ func (kademlia *Kademlia) LookupData(valueSelf KademliaID) []byte {
 	return nil
 }
 
-func (kademlia *Kademlia) getData(value *KademliaID) (*string, Contact) {
+func (kademlia *Kademlia) GetData(value *KademliaID) (*string, Contact) {
 	selfCheck := kademlia.LookupData(*value)
 	if selfCheck != nil {
 		gottenValue := string(selfCheck)
