@@ -76,7 +76,7 @@ func Test_run(t *testing.T) {
 func Test_store(t *testing.T) {
 	type args struct {
 		input func() string
-		Store func(data []byte) ([]*KademliaID, string)
+		Store func(data []byte) ([]*kademlia.KademliaID, string)
 	}
 	tests := []struct {
 		name string
