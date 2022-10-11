@@ -118,7 +118,7 @@ func getResponseMessage(message []byte, network *Network, kademliaStruct *Kademl
 		//fmt.Println("Received StoreMessage")
 		var storeData *[]byte
 		json.Unmarshal([]byte(messageList[1]), &storeData)
-		kademliaStruct.Store(*storeData)
+		kademliaStruct.store(*storeData)
 		ex := extractContact([]byte(messageList[2]), network)
 		if ex != nil {
 			return ex

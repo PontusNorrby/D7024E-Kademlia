@@ -24,7 +24,7 @@ func run(userInput func() string, nodeShutDown func(), kademlia *kademlia.Kademl
 				return
 			}
 		} else if input == "put" {
-			store(userInput, kademlia.StoreHelp)
+			store(userInput, kademlia.StoreValue)
 		} else if input == "get" {
 			get(userInput, kademlia)
 		} else if input == "help" {

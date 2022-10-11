@@ -101,13 +101,13 @@ func (kademlia *Kademlia) GetData(value *KademliaID) (*string, Contact) {
 	return nil, Contact{}
 }
 
-func (kademlia *Kademlia) StoreHelp(data []byte) ([]*KademliaID, string) {
+func (kademlia *Kademlia) StoreValue(data []byte) ([]*KademliaID, string) {
 	target := NewKademliaID(string(data))
 	closest := kademlia.LookupContact(target)
 	var storedNodes []*KademliaID
 	for _, contact := range closest.contacts {
 		if contact.ID.Equals(kademlia.Network.RoutingTable.me.ID) {
-			kademlia.Store(data)
+			kademlia.store(data)
 			storedNodes = append(storedNodes, contact.ID)
 		}
 		go func(contact Contact) {
@@ -121,7 +121,7 @@ func (kademlia *Kademlia) StoreHelp(data []byte) ([]*KademliaID, string) {
 }
 
 // Just stores the data in this node not on the "correct" node
-func (kademlia *Kademlia) Store(data []byte) KademliaID {
+func (kademlia *Kademlia) store(data []byte) KademliaID {
 	storeId := NewKademliaID(string(data))
 	dataStore := Value{data: data}
 	kademlia.m[*storeId] = dataStore

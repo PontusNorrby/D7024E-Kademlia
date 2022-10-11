@@ -38,7 +38,7 @@ func TestGetValueSelf(t *testing.T) {
 	testContact := NewContact(NewRandomKademliaID(), "172.20.0.1")
 	testKademlia := NewKademliaStruct(NewNetwork(&testContact))
 	testValue := []byte("FF00")
-	varStore := testKademlia.Store(testValue)
+	varStore := testKademlia.store(testValue)
 	varTestValue, testContact := testKademlia.GetData(&varStore)
 	if varTestValue == nil {
 		t.Fail()
