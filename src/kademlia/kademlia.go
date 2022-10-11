@@ -3,7 +3,7 @@ package kademlia
 const alphaValue = 3
 
 type Kademlia struct {
-	m       map[KademliaID]Value
+	m       map[KademliaID]*Value
 	Network *Network
 }
 
@@ -13,7 +13,7 @@ type Value struct {
 
 func NewKademliaStruct(network *Network) *Kademlia {
 	kademlia := &Kademlia{}
-	kademlia.m = make(map[KademliaID]Value)
+	kademlia.m = make(map[KademliaID]*Value)
 	kademlia.Network = network
 	return kademlia
 }
@@ -92,7 +92,6 @@ func (kademlia *Kademlia) GetData(value *KademliaID) (*string, Contact) {
 				}
 			}(possibleContacts[0])
 			possibleContacts = possibleContacts[1:]
-			possibleContacts = possibleContacts[1:]
 		}
 		if resultString != nil {
 			return resultString, contactCandidates
@@ -124,7 +123,7 @@ func (kademlia *Kademlia) StoreValue(data []byte) ([]*KademliaID, string) {
 func (kademlia *Kademlia) store(data []byte) KademliaID {
 	storeId := NewKademliaID(string(data))
 	dataStore := Value{data: data}
-	kademlia.m[*storeId] = dataStore
+	kademlia.m[*storeId] = &dataStore
 	return *storeId
 }
 
