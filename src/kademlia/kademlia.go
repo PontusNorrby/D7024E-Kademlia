@@ -92,6 +92,7 @@ func (kademlia *Kademlia) GetData(value *KademliaID) (*string, Contact) {
 				}
 			}(possibleContacts[0])
 			possibleContacts = possibleContacts[1:]
+			possibleContacts = possibleContacts[1:]
 		}
 		if resultString != nil {
 			return resultString, contactCandidates
@@ -100,7 +101,7 @@ func (kademlia *Kademlia) GetData(value *KademliaID) (*string, Contact) {
 	return nil, Contact{}
 }
 
-func (kademlia *Kademlia) storeHelp(data []byte) ([]*KademliaID, string) {
+func (kademlia *Kademlia) StoreHelp(data []byte) ([]*KademliaID, string) {
 	target := NewKademliaID(string(data))
 	closest := kademlia.LookupContact(target)
 	var storedNodes []*KademliaID

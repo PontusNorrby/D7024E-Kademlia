@@ -24,7 +24,7 @@ func run(userInput func() string, nodeShutDown func(), kademlia *kademlia.Kademl
 				return
 			}
 		} else if input == "put" {
-			store(userInput, kademlia.Store)
+			store(userInput, kademlia.StoreHelp)
 		} else if input == "get" {
 			get(userInput, kademlia)
 		} else if input == "help" {
@@ -34,6 +34,14 @@ func run(userInput func() string, nodeShutDown func(), kademlia *kademlia.Kademl
 		}
 
 	}
+}
+
+func store(input func() string, Store func(data []byte) ([]*KademliaID, string)) {
+	fmt.Println("What value do you want to store? ")
+	value := input()
+	storeID, hash := Store([]byte(value))
+	fmt.Println("Hash of", value, "is", hash)
+	fmt.Println("the value stored in nodes: ", storeID)
 }
 
 func get(input func() string, kademlia *kademlia.Kademlia) {
@@ -48,12 +56,9 @@ func get(input func() string, kademlia *kademlia.Kademlia) {
 	fmt.Println("\""+*value+"\" found at node", contact.ID)
 }
 
-func store(input func() string, store func(data []byte) kademlia.KademliaID) {
-	fmt.Println("What value do you want to store? ")
-	value := input()
-	storeID := store([]byte(value))
-	fmt.Println("the value stored in nodes: ", storeID)
-}
+//func store(input func() string, store func(data []byte) kademlia.KademliaID) {
+
+//}
 
 func helpList() {
 	fmt.Println("put - Takes a single argument, the contents of the file you are uploading, and outputs the hash of the object, if it could be uploaded successfully.")
