@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"github.com/PontusNorrby/D7024E-Kademlia/src/cli"
 	"github.com/PontusNorrby/D7024E-Kademlia/src/kademlia"
+	"log"
 	"math/rand"
 	"net"
 	"os"
@@ -27,14 +29,8 @@ func main() {
 	//Creates contacts for both the new node and the base node
 	selfContact := kademlia.NewContact(selfId, "")
 	baseContact := kademlia.NewContact(kademlia.NewRandomKademliaID(), BaseIp+":"+strconv.Itoa(Port))
-	//fmt.Println("Base IP: ", BaseIp)
-
-	//testStoreValue := []byte("HelloWorld")
-	/*newKademlia := kademlia.NewKademliaStruct(newNetwork)
-	newKademlia.Store(testStoreValue)*/
 
 	if localIP.String() == BaseIp {
-
 		kademliaPing := kademlia.NewNetwork(&selfContact).SendPingMessage(&baseContact)
 		if kademliaPing {
 			Port = rand.Intn(65535-1024) + 1024
@@ -43,7 +39,6 @@ func main() {
 		baseContact = kademlia.NewContact(kademlia.NewRandomKademliaID(), localIP.String()+":"+strconv.Itoa(Port))
 		kademliaStruct = kademlia.NewKademliaStruct(kademlia.NewNetwork(&selfContact))
 	} else {
-		//baseContact = kademlia.NewContact(kademlia.NewRandomKademliaID(), localIP.String()+":"+strconv.Itoa(Port))
 		selfContact = kademlia.NewContact(kademlia.NewRandomKademliaID(), localIP.String()+":"+strconv.Itoa(Port))
 		kademliaStruct = kademlia.NewKademliaStruct(kademlia.NewNetwork(&selfContact))
 		if !kademliaStruct.Network.SendPingMessage(&baseContact) {
@@ -51,8 +46,6 @@ func main() {
 		}
 		Port = rand.Intn(65535-1024) + 1024
 	}
-
-	//newNetwork.SendStoreMessage(testStoreValue)
 
 	go kademliaStruct.Network.Listen(localIP.String(), Port, kademliaStruct)
 	go cli.StartCLI(nodeShutDown, kademliaStruct)
@@ -67,12 +60,12 @@ func main() {
 func GetOutboundIP() net.IP {
 	conn, err := net.Dial("udp", "8.8.8.8:80")
 	if err != nil {
-		//log.Fatal(err)
+		log.Fatal(err)
 	}
 	defer func(conn net.Conn) {
 		err := conn.Close()
 		if err != nil {
-			//print("Closed connection")
+			print("Closed connection")
 		}
 	}(conn)
 
@@ -82,6 +75,6 @@ func GetOutboundIP() net.IP {
 }
 
 func nodeShutDown() {
-	//fmt.Println("Shutting down the node...")
+	fmt.Println("Shutting down the node...")
 	os.Exit(0)
 }

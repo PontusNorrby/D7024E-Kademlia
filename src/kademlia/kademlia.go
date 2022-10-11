@@ -62,8 +62,42 @@ func (kademlia *Kademlia) lookupContactTest(target *KademliaID, earlierContacts 
 	}
 }
 
-func (kademlia *Kademlia) LookupData(hash string) {
-	// TODO
+func (kademlia *Kademlia) LookupData(valueSelf KademliaID) []byte {
+	value, check := kademlia.m[valueSelf]
+	if check {
+		return value.data
+	}
+	return nil
+}
+
+func (kademlia *Kademlia) getData(value *KademliaID) (*string, Contact) {
+	selfCheck := kademlia.LookupData(*value)
+	if selfCheck != nil {
+		gottenValue := string(selfCheck)
+		//If the function LookupData finds the data on the same node,
+		//Return the value and the node that has the information (the node we are on)
+		return &gottenValue, *kademlia.Network.CurrentNode
+	}
+	possibleContacts := kademlia.LookupContact(value).contacts
+	for len(possibleContacts) > 0 {
+		length := minVal(alphaValue, len(possibleContacts))
+		var resultString *string = nil
+		var contactCandidates Contact = Contact{}
+		for i := 0; i < length; i++ {
+			go func(possibleContact Contact) {
+				findDataRes := kademlia.Network.SendFindDataMessage(value.String(), &possibleContact)
+				if !(findDataRes == "Error") {
+					resultString = &findDataRes
+					contactCandidates = possibleContact
+				}
+			}(possibleContacts[0])
+			possibleContacts = possibleContacts[1:]
+		}
+		if resultString != nil {
+			return resultString, contactCandidates
+		}
+	}
+	return nil, Contact{}
 }
 
 func (kademlia *Kademlia) storeHelp(data []byte) ([]*KademliaID, string) {

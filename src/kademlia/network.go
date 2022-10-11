@@ -97,23 +97,22 @@ func getResponseMessage(message []byte, network *Network, kademliaStruct *Kademl
 		return body
 
 	} else if messageList[0] == "FindData" {
-		//TODO need kademlia.lookup(data)
-		/*var hash *KademliaID
+		var hash *KademliaID
 		json.Unmarshal([]byte(messageList[1]), &hash)
 		ex := extractContact([]byte(messageList[2]), network)
 		if ex != nil {
 			fmt.Println(ex)
 			return ex
 		}
-		lookupValue := kademlia.LookupData(*hash)
+		lookupValue := kademliaStruct.LookupData(*hash)
 		if lookupValue != nil {
 			body, _ := json.Marshal(network.CurrentNode)
-			return []byte("VALU;" + string(lookupValue) + " " + string(body))
+			return []byte("VALUE;" + string(lookupValue) + " " + string(body))
 		}
 		resClosestNodes := network.RoutingTable.FindClosestContacts(hash, 4096)
 		resClosestNodes = append(resClosestNodes, *network.CurrentNode)
 		body, _ := json.Marshal(resClosestNodes)
-		return []byte("CONT" + string(body))*/
+		return []byte("CONT" + string(body))
 
 	} else if messageList[0] == "StoreMessage" {
 		//fmt.Println("Received StoreMessage")
@@ -129,25 +128,6 @@ func getResponseMessage(message []byte, network *Network, kademliaStruct *Kademl
 	}
 	return []byte("Error: Invalid RPC protocol")
 }
-
-// TODO: Which is better if statements or switch case?
-//func getResponseMessage(message []byte, network *Network) []byte {
-//	messageList := strings.Split(string(message), " ")
-//	switch{
-//	case messageList[0] == "Ping":
-//		body, err := json.Marshal(network.CurrentNode)
-//		if err != nil {
-//			log.Println(err)
-//			panic(err)
-//		}
-//		ex := extractContact([]byte(messageList[1]), network)
-//		if ex != nil {
-//			return ex
-//		}
-//		return body
-//	}
-//	return []byte("Error: Invalid RPC protocol")
-//}
 
 func extractContact(message []byte, network *Network) []byte {
 	var contact *Contact
