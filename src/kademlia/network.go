@@ -44,7 +44,7 @@ func (network *Network) Listen(ip string, port int, kademliaStruct *Kademlia) {
 
 	for {
 		// wait for UDP client to connect
-		buffer := make([]byte, 1024)
+		buffer := make([]byte, 4096)
 		n, readFromUDPAddress, readFromUdpError := listenUdpResponse.ReadFromUDP(buffer)
 
 		if readFromUdpError != nil {
