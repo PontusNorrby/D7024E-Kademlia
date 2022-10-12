@@ -242,7 +242,7 @@ func handleSendDataResponse(message []byte, network *Network) string {
 		log.Println(string(message))
 		return string(message)
 	} else {
-		if string(message[:4]) == "VALU" {
+		if string(message[:4]) == "VALUE" {
 			resp := strings.Split(string(message[5:]), " ")
 			var contact *Contact
 			json.Unmarshal([]byte(resp[1]), &contact)
