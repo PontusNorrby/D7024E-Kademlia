@@ -83,7 +83,7 @@ func getResponseMessage(message []byte, network *Network, kademliaStruct *Kademl
 		var id *KademliaID
 		UnmarshalError := json.Unmarshal([]byte(messageList[1]), &id)
 		if UnmarshalError != nil {
-			println("Error is ", UnmarshalError)
+			println("Error is  hahaha", UnmarshalError)
 			return nil
 		}
 		extraction := extractContact([]byte(messageList[2]), network)
@@ -118,7 +118,9 @@ func getResponseMessage(message []byte, network *Network, kademliaStruct *Kademl
 		//fmt.Println("Received StoreMessage")
 		var storeData *[]byte
 		json.Unmarshal([]byte(messageList[1]), &storeData)
+		fmt.Println("1")
 		kademliaStruct.store(*storeData)
+		fmt.Println("2")
 		ex := extractContact([]byte(messageList[2]), network)
 		if ex != nil {
 			return ex
@@ -209,7 +211,7 @@ func (network *Network) SendFindContactMessage(contact *Contact, searchID *Kadem
 	return handleFindContactResponse(buffer[:n], network)
 }
 
-func (network *Network) SendFindDataMessage(hash string, contact *Contact) string {
+func (network *Network) SendFindDataMessage(hash *KademliaID, contact *Contact) string {
 	conn, err3 := net.Dial("udp4", contact.Address)
 	if err3 != nil {
 		log.Println(err3)

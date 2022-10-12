@@ -1,10 +1,14 @@
 package kademlia
 
+import "fmt"
+
 const alphaValue = 3
 
 type Kademlia struct {
 	m       map[KademliaID]*Value
-	Network *Network
+	m            map[KademliaID]*Value
+	Network      *Network
+	KnownHolders map[Contact]KademliaID
 }
 
 type Value struct {
@@ -15,6 +19,7 @@ func NewKademliaStruct(network *Network) *Kademlia {
 	kademlia := &Kademlia{}
 	kademlia.m = make(map[KademliaID]*Value)
 	kademlia.Network = network
+	kademlia.KnownHolders = make(map[Contact]KademliaID)
 	return kademlia
 }
 
@@ -85,7 +90,7 @@ func (kademlia *Kademlia) GetData(value *KademliaID) (*string, Contact) {
 		var contactCandidates Contact = Contact{}
 		for i := 0; i < length; i++ {
 			go func(possibleContact Contact) {
-				findDataRes := kademlia.Network.SendFindDataMessage(value.String(), &possibleContact)
+				findDataRes := kademlia.Network.SendFindDataMessage(value, &possibleContact)
 				if !(findDataRes == "Error") {
 					resultString = &findDataRes
 					contactCandidates = possibleContact
@@ -121,9 +126,13 @@ func (kademlia *Kademlia) StoreValue(data []byte) ([]*KademliaID, string) {
 
 // Just stores the data in this node not on the "correct" node
 func (kademlia *Kademlia) store(data []byte) KademliaID {
+	fmt.Println("3")
 	storeId := NewKademliaID(string(data))
-	dataStore := Value{data: data}
+	fmt.Println("4")
+	dataStore := Value{data}
+	fmt.Println("5")
 	kademlia.m[*storeId] = &dataStore
+	fmt.Println("6")
 	return *storeId
 }
 

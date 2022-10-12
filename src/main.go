@@ -49,7 +49,8 @@ func main() {
 
 	go kademliaStruct.Network.Listen(localIP.String(), Port, kademliaStruct)
 	go cli.StartCLI(nodeShutDown, kademliaStruct)
-	kademliaStruct.Network.SendFindContactMessage(&selfContact, selfContact.ID)
+	//b := []byte("ABC")
+	//kademliaStruct.StoreValue(b)
 
 	for {
 		time.Sleep(5 * time.Second)
