@@ -5,7 +5,6 @@ import "fmt"
 const alphaValue = 3
 
 type Kademlia struct {
-	m       map[KademliaID]*Value
 	m            map[KademliaID]*Value
 	Network      *Network
 	KnownHolders map[Contact]KademliaID
