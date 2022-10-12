@@ -296,12 +296,11 @@ func (network *Network) SendStoreMessage(data []byte, contact *Contact, kademlia
 	}
 	defer conn.Close()
 	//Message builder
-	startMessage := []byte("StoreMessage" + " ")
-	body, err5 := json.Marshal(data)
-	if err5 != nil {
-		log.Println(err5)
-	}
-	message := append(startMessage, body...)
+	body, _ := json.Marshal(data)
+	message := []byte("StoreMessage" + " " + string(body))
+	body, _ = json.Marshal(network.CurrentNode)
+	message = append(message, body...)
+
 	conn.Write(message)
 	buffer := make([]byte, 4096)
 	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
