@@ -191,11 +191,10 @@ func (network *Network) SendFindContactMessage(contact *Contact, searchID *Kadem
 	defer conn.Close()
 
 	//Message builder
-	startMessage := []byte("FindContact" + " ")
-	body, err5 := json.Marshal(searchID)
-	if err5 != nil {
-		log.Println(err5)
-	}
+	body, _ := json.Marshal(searchID)
+	startMessage := []byte("FindContact" + " " + string(body))
+	body, _ = json.Marshal(network.CurrentNode)
+
 	message := append(startMessage, body...)
 
 	conn.Write(message)
