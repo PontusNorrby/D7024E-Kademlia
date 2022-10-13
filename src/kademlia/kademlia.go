@@ -1,6 +1,9 @@
 package kademlia
 
-import "fmt"
+import (
+	"fmt"
+	"sync"
+)
 
 const alphaValue = 3
 
@@ -38,19 +41,23 @@ func (kademlia *Kademlia) LookupContact(target *KademliaID) ContactCandidates {
 }
 
 func (kademlia *Kademlia) lookupContactTest(target *KademliaID, earlierContacts []Contact) ContactCandidates {
-	foundContacts := 0
 	newRouteFinding := NewRoutingTable(*kademlia.Network.CurrentNode)
+	var goLock sync.WaitGroup
 	minLength := minVal(alphaValue, len(earlierContacts))
+	goLock.Add(minLength)
 	for i := 0; i < minLength; i++ {
 		newContact := earlierContacts[i]
 		go func(newContact Contact) {
+			defer goLock.Done()
 			contactsFetched := kademlia.Network.SendFindContactMessage(&newContact, target)
 			for _, middleContact := range contactsFetched {
 				newRouteFinding.AddContact(middleContact)
 			}
 		}(newContact)
 	}
+	goLock.Wait()
 	contactClosest := newRouteFinding.FindClosestContacts(target, bucketSize)
+	foundContacts := 0
 	for _, contact := range contactClosest {
 		for _, previousContact := range earlierContacts {
 			if contact.ID.Equals(previousContact.ID) {
@@ -133,6 +140,10 @@ func (kademlia *Kademlia) store(data []byte) KademliaID {
 	kademlia.m[*storeId] = &dataStore
 	fmt.Println("6")
 	return *storeId
+}
+
+func (kademlia *Kademlia) AddToKnown(contact *Contact, hash *KademliaID) {
+	kademlia.KnownHolders[*contact] = *hash
 }
 
 func minVal(x int, y int) int {
