@@ -1,7 +1,6 @@
 package kademlia
 
 import (
-	"fmt"
 	"sync"
 )
 
@@ -132,13 +131,9 @@ func (kademlia *Kademlia) StoreValue(data []byte) ([]*KademliaID, string) {
 
 // Just stores the data in this node not on the "correct" node
 func (kademlia *Kademlia) store(data []byte) KademliaID {
-	fmt.Println("3")
 	storeId := NewKademliaID(string(data))
-	fmt.Println("4")
 	dataStore := Value{data}
-	fmt.Println("5")
 	kademlia.m[*storeId] = &dataStore
-	fmt.Println("6")
 	return *storeId
 }
 
