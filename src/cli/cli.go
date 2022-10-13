@@ -17,11 +17,13 @@ func run(userInput func() string, nodeShutDown func(), kademlia *kademlia.Kademl
 	for {
 		input := userInput()
 		if input == "exit" {
-			fmt.Println("You are going to exit, to confirm please write yes else, press enter")
+			fmt.Println("Are you sure you want exit the node(y/n)?")
 			confirmation := userInput()
-			if confirmation == "yes" {
+			if confirmation == "y" {
 				nodeShutDown()
 				return
+			} else {
+				continue
 			}
 		} else if input == "put" {
 			store(userInput, kademlia.StoreValue)
@@ -30,30 +32,30 @@ func run(userInput func() string, nodeShutDown func(), kademlia *kademlia.Kademl
 		} else if input == "help" {
 			helpList()
 		} else {
-			fmt.Println("Unknown command, please write help to get a list of commands")
+			fmt.Println("Unknown command, please write help to get a list of available commands")
 		}
 
 	}
 }
 
 func store(input func() string, Store func(data []byte) ([]*KademliaID, string)) {
-	fmt.Println("What value do you want to store? ")
+	fmt.Println("Please insert the value you want to store...")
 	value := input()
-	storeID, hash := Store([]byte(value))
-	fmt.Println("Hash of", value, "is", hash)
-	fmt.Println("the value stored in nodes: ", storeID)
+	storeID, target := Store([]byte(value))
+	fmt.Println("The value you saved is ", value, "\n", "The hash of the value is ", target, "\n", "Your value is saved in node(s) with id(:s)", storeID)
+
 }
 
 func get(input func() string, kademlia *kademlia.Kademlia) {
-	fmt.Println("insert the ID you want to get")
+	fmt.Println("Please insert the hash value to get the node(s) id(s)...")
 	stringValue := input()
 	id := ToKademliaID(stringValue)
 	value, contact := kademlia.GetData(id)
 	if value == nil {
-		fmt.Println("value not found")
+		fmt.Println("No such hash value!")
 		return
 	}
-	fmt.Println("\""+*value+"\" found at node", contact.ID)
+	fmt.Println("\""+*value+"\" found at node(s)", contact.ID)
 }
 
 //func store(input func() string, store func(data []byte) kademlia.KademliaID) {
@@ -61,10 +63,10 @@ func get(input func() string, kademlia *kademlia.Kademlia) {
 //}
 
 func helpList() {
-	fmt.Println("put - Takes a single argument, the contents of the file you are uploading, and outputs the hash of the object, if it could be uploaded successfully.")
-	fmt.Println("get - Takes a hash as its only argument, and outputs the contents of the object and the node it was retrieved from, if it could be downloaded successfully.")
+	fmt.Println("put - Store a value in the nodes, takes string and returns the hash value and the node id")
+	fmt.Println("get - Get the stored value in the nodes, takes the hash value and returns the node id")
 	fmt.Println("exit - Terminates the node.")
-	fmt.Println("help - Prints this list")
+	fmt.Println("help - Prints help list")
 }
 
 func userInput() string {
