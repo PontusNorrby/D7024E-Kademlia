@@ -89,7 +89,10 @@ func getResponseMessage(message []byte, network *Network, kademliaStruct *Kademl
 
 	} else if messageList[0] == "FindData" {
 		var hash *KademliaID
-		json.Unmarshal([]byte(messageList[1]), &hash)
+		unmarshalError := json.Unmarshal([]byte(messageList[1]), &hash)
+		if unmarshalError != nil {
+			return nil
+		}
 		extraction := extractContact([]byte(messageList[2]), network)
 		if extraction != nil {
 			fmt.Println(extraction)
@@ -107,7 +110,10 @@ func getResponseMessage(message []byte, network *Network, kademliaStruct *Kademl
 
 	} else if messageList[0] == "StoreMessage" {
 		var storeData *[]byte
-		json.Unmarshal([]byte(messageList[1]), &storeData)
+		unmarshalError := json.Unmarshal([]byte(messageList[1]), &storeData)
+		if unmarshalError != nil {
+			return nil
+		}
 		kademliaStruct.storeDataHelp(*storeData)
 		extraction := extractContact([]byte(messageList[2]), network)
 		if extraction != nil {
@@ -121,7 +127,10 @@ func getResponseMessage(message []byte, network *Network, kademliaStruct *Kademl
 
 func extractContact(message []byte, network *Network) []byte {
 	var contact *Contact
-	json.Unmarshal(message, &contact)
+	unmarshalError := json.Unmarshal(message, &contact)
+	if unmarshalError != nil {
+		return nil
+	}
 	if !contactUsability(contact, network) {
 		return []byte("Error: Invalid contact information")
 	}
@@ -136,18 +145,29 @@ func (network *Network) SendPingMessage(contact *Contact) bool {
 		log.Println(netDialError)
 		return false
 	}
-	defer netDialConnection.Close()
+	defer func(netDialConnection net.Conn) {
+		closeError := netDialConnection.Close()
+		if closeError != nil {
+
+		}
+	}(netDialConnection)
 	startMessage := []byte("Ping" + " ")
 	marshalBody, _ := json.Marshal(network.CurrentNode)
 	message := append(startMessage, marshalBody...)
-	netDialConnection.Write(message)
-	buffer := make([]byte, 4096)
-	netDialConnection.SetReadDeadline(time.Now().Add(2 * time.Second))
-	n, err := netDialConnection.Read(buffer)
-	if err != nil {
+	_, writeError := netDialConnection.Write(message)
+	if writeError != nil {
 		return false
 	}
-	handlePingResponse(buffer[:n], network)
+	buffer := make([]byte, 4096)
+	setReadDeadlineError := netDialConnection.SetReadDeadline(time.Now().Add(2 * time.Second))
+	if setReadDeadlineError != nil {
+		return false
+	}
+	end, readError := netDialConnection.Read(buffer)
+	if readError != nil {
+		return false
+	}
+	handlePingResponse(buffer[:end], network)
 	return true
 }
 
@@ -157,7 +177,10 @@ func handlePingResponse(message []byte, network *Network) {
 		return
 	} else {
 		var contact *Contact
-		json.Unmarshal(message, &contact)
+		unmarshalError := json.Unmarshal(message, &contact)
+		if unmarshalError != nil {
+			return
+		}
 		if contactUsability(contact, network) {
 			network.RoutingTable.AddContact(*contact)
 		}
@@ -170,14 +193,25 @@ func (network *Network) SendFindContactMessage(contact *Contact, searchID *Kadem
 		log.Println(netDialError)
 		return nil
 	}
-	defer netDialConnection.Close()
+	defer func(netDialConnection net.Conn) {
+		closeError := netDialConnection.Close()
+		if closeError != nil {
+
+		}
+	}(netDialConnection)
 	marshalBody, _ := json.Marshal(searchID)
 	startMessage := []byte("FindContact" + " " + string(marshalBody) + " ")
 	newMarshalBody, _ := json.Marshal(network.CurrentNode)
 	message := append(startMessage, newMarshalBody...)
-	netDialConnection.Write(message)
+	_, writeError := netDialConnection.Write(message)
+	if writeError != nil {
+		return nil
+	}
 	buffer := make([]byte, 4096)
-	netDialConnection.SetReadDeadline(time.Now().Add(2 * time.Second))
+	setReadDeadlineError := netDialConnection.SetReadDeadline(time.Now().Add(2 * time.Second))
+	if setReadDeadlineError != nil {
+		return nil
+	}
 	end, readError := netDialConnection.Read(buffer)
 	if readError != nil {
 		return nil
@@ -192,7 +226,10 @@ func handleFindContactResponse(message []byte, network *Network) []Contact {
 	} else {
 		var foundContacts []Contact
 		var usableContacts []Contact
-		json.Unmarshal(message, &foundContacts)
+		unmarshalError := json.Unmarshal(message, &foundContacts)
+		if unmarshalError != nil {
+			return nil
+		}
 		for _, foundContact := range foundContacts {
 			if contactUsability(&foundContact, network) {
 				if network.SendPingMessage(&foundContact) {
@@ -204,21 +241,31 @@ func handleFindContactResponse(message []byte, network *Network) []Contact {
 	}
 }
 
-// TODO hash?
-func (network *Network) SendFindDataMessage(hash *KademliaID, contact *Contact) string {
+func (network *Network) SendFindDataMessage(value *KademliaID, contact *Contact) string {
 	netDialConnection, netDialError := net.Dial("udp4", contact.Address)
 	if netDialError != nil {
 		log.Println(netDialError)
 		return "ERROR"
 	}
-	defer netDialConnection.Close()
-	marshalBody, _ := json.Marshal(hash)
+	defer func(netDialConnection net.Conn) {
+		closeError := netDialConnection.Close()
+		if closeError != nil {
+
+		}
+	}(netDialConnection)
+	marshalBody, _ := json.Marshal(value)
 	startMessage := []byte("FindData" + " " + string(marshalBody) + " ")
 	newMarshalBody, _ := json.Marshal(network.CurrentNode)
 	message := append(startMessage, newMarshalBody...)
-	netDialConnection.Write(message)
+	_, writeError := netDialConnection.Write(message)
+	if writeError != nil {
+		return ""
+	}
 	buffer := make([]byte, 4096)
-	netDialConnection.SetReadDeadline(time.Now().Add(2 * time.Second))
+	SetReadDeadlineError := netDialConnection.SetReadDeadline(time.Now().Add(2 * time.Second))
+	if SetReadDeadlineError != nil {
+		return ""
+	}
 	end, readError := netDialConnection.Read(buffer)
 	if readError != nil {
 		return "ERROR"
@@ -235,14 +282,20 @@ func handleSendDataResponse(message []byte, network *Network) string {
 		if string(message[:5]) == "VALUE" {
 			resp := strings.Split(string(message[5:]), " ")
 			var contact *Contact
-			json.Unmarshal([]byte(resp[1]), &contact)
+			unmarshalError := json.Unmarshal([]byte(resp[1]), &contact)
+			if unmarshalError != nil {
+				return ""
+			}
 			if contactUsability(contact, network) {
 				network.RoutingTable.AddContact(*contact)
 			}
 			return resp[0]
 		}
 		var foundContact []Contact
-		json.Unmarshal(message, &foundContact)
+		unmarshalError := json.Unmarshal(message, &foundContact)
+		if unmarshalError != nil {
+			return ""
+		}
 		for _, foundContact := range foundContact {
 			if contactUsability(&foundContact, network) {
 				network.SendPingMessage(&foundContact)
@@ -258,14 +311,25 @@ func (network *Network) SendStoreMessage(data []byte, contact *Contact) bool {
 		log.Println(netDialError)
 		return false
 	}
-	defer netDialConnection.Close()
+	defer func(netDialConnection net.Conn) {
+		closeError := netDialConnection.Close()
+		if closeError != nil {
+
+		}
+	}(netDialConnection)
 	marshalBody, _ := json.Marshal(data)
 	message := []byte("StoreMessage" + " " + string(marshalBody) + " ")
 	newMarshalBody, _ := json.Marshal(network.CurrentNode)
 	message = append(message, newMarshalBody...)
-	netDialConnection.Write(message)
+	_, writeError := netDialConnection.Write(message)
+	if writeError != nil {
+		return false
+	}
 	buffer := make([]byte, 4096)
-	netDialConnection.SetReadDeadline(time.Now().Add(2 * time.Second))
+	setReadDeadlineError := netDialConnection.SetReadDeadline(time.Now().Add(2 * time.Second))
+	if setReadDeadlineError != nil {
+		return false
+	}
 	end, readError := netDialConnection.Read(buffer)
 	if readError != nil {
 		return false
@@ -280,7 +344,10 @@ func handleStoreResponse(message []byte, network *Network) {
 		return
 	} else {
 		var storeContact *Contact
-		json.Unmarshal(message, &storeContact)
+		unmarshalError := json.Unmarshal(message, &storeContact)
+		if unmarshalError != nil {
+			return
+		}
 		if contactUsability(storeContact, network) {
 			network.RoutingTable.AddContact(*storeContact)
 		}

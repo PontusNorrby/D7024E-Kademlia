@@ -72,10 +72,10 @@ func (kademlia *Kademlia) lookupContactHelp(target *KademliaID, earlierContacts 
 	}
 }
 
-func (kademlia *Kademlia) LookupData(valueSelf KademliaID) []byte {
-	value, check := kademlia.m[valueSelf]
+func (kademlia *Kademlia) LookupData(value KademliaID) []byte {
+	val, check := kademlia.m[value]
 	if check {
-		return value.data
+		return val.data
 	}
 	return nil
 }
@@ -94,7 +94,7 @@ func (kademlia *Kademlia) GetData(value *KademliaID) (*string, Contact) {
 		var wg sync.WaitGroup
 		wg.Add(length)
 		var resultString *string = nil
-		var contactCandidates Contact = Contact{}
+		var contactCandidates = Contact{}
 		for i := 0; i < length; i++ {
 			go func(possibleContact Contact) {
 				defer wg.Done()
