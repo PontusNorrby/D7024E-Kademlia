@@ -99,7 +99,7 @@ func getResponseMessage(message []byte, network *Network, kademliaStruct *Kademl
 		lookupValue := kademliaStruct.LookupData(*hash)
 		if lookupValue != nil {
 			body, _ := json.Marshal(network.CurrentNode)
-			return []byte("VALUE;" + string(lookupValue) + " " + string(body))
+			return []byte("VALUE" + string(lookupValue) + " " + string(body))
 		}
 		resClosestNodes := network.RoutingTable.FindClosestContacts(hash, 20)
 		resClosestNodes = append(resClosestNodes, *network.CurrentNode)
