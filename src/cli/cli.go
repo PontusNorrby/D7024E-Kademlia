@@ -55,7 +55,7 @@ func get(input func() string, kademlia *kademlia.Kademlia) {
 		fmt.Println("No such hash value!")
 		return
 	}
-	fmt.Println("\""+*value+"\" found at node(s)", contact.ID)
+	fmt.Println("\""+*value+"\" found at node", contact.ID)
 }
 
 //func store(input func() string, store func(data []byte) kademlia.KademliaID) {

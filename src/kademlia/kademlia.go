@@ -130,7 +130,7 @@ func (kademlia *Kademlia) StoreValue(data []byte) ([]*KademliaID, string) {
 		}
 		go func(contact Contact) {
 			defer wg.Done()
-			res := kademlia.Network.SendStoreMessage(data, &contact, kademlia)
+			res := kademlia.Network.SendStoreMessage(data, &contact)
 			if res {
 				storedNodes = append(storedNodes, contact.ID)
 			}

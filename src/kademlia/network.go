@@ -57,7 +57,6 @@ func (network *Network) Listen(ip string, port int, kademliaStruct *Kademlia) {
 	}
 }
 
-// TODO: COMPLETE THIS
 func getResponseMessage(message []byte, network *Network, kademliaStruct *Kademlia) []byte {
 	messageList := strings.Split(string(message), " ")
 	if messageList[0] == "Ping" {
@@ -241,7 +240,6 @@ func (network *Network) SendFindDataMessage(hash *KademliaID, contact *Contact) 
 }
 
 func handleSendDataResponse(message []byte, network *Network) string {
-	fmt.Println("MESSAGE: ", message) //TODO delete this later
 	if string(message[:5]) == "Error" {
 		log.Println(string(message))
 		return string(message)
@@ -266,8 +264,7 @@ func handleSendDataResponse(message []byte, network *Network) string {
 	}
 }
 
-// TODO Kademlia not used
-func (network *Network) SendStoreMessage(data []byte, contact *Contact, kademlia *Kademlia) bool {
+func (network *Network) SendStoreMessage(data []byte, contact *Contact) bool {
 	netDialConnection, netDialError := net.Dial("udp4", contact.Address)
 	if netDialError != nil {
 		log.Println(netDialError)
