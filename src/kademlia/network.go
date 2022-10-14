@@ -30,7 +30,7 @@ func (network *Network) Listen(ip string, port int, kademliaStruct *Kademlia) {
 		return
 	}
 
-	fmt.Println("UDP server up and listening on", addrToString)
+	//fmt.Println("UDP server up and listening on", addrToString)
 
 	defer func(listenUdpResponse *net.UDPConn) {
 		closeError := listenUdpResponse.Close()
@@ -122,9 +122,9 @@ func getResponseMessage(message []byte, network *Network, kademliaStruct *Kademl
 
 func extractContact(message []byte, network *Network) []byte {
 	var contact *Contact
-	err := json.Unmarshal(message, &contact)
-	if err != nil {
-		return nil
+	json.Unmarshal(message, &contact)
+	if !contactUsability(contact, network) {
+		return []byte("Error: Invalid contact information")
 	}
 	network.RoutingTable.AddContact(*contact)
 	return nil
@@ -246,7 +246,7 @@ func handleSendDataResponse(message []byte, network *Network) string {
 		log.Println(string(message))
 		return string(message)
 	} else {
-		if string(message[:5]) == "VALUE" {
+		if string(message[:4]) == "VALU" {
 			resp := strings.Split(string(message[5:]), " ")
 			var contact *Contact
 			json.Unmarshal([]byte(resp[1]), &contact)

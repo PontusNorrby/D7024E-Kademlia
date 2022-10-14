@@ -92,6 +92,43 @@ func TestStore(t *testing.T) {
 			t.FailNow()
 		}
 	}
+	fmt.Println("Cleared Store test")
+}
+
+func TestStoreAndFind(t *testing.T) {
+	nodeID := NewRandomKademliaID()
+	nodeID2 := NewRandomKademliaID()
+	contact := NewContact(nodeID, "127.0.0.1:8002")
+	contact2 := NewContact(nodeID2, "127.0.0.1:8003")
+	network := NewNetwork(&contact)
+	network2 := NewNetwork(&contact2)
+	kademlia := NewKademliaStruct(network)
+	kademlia2 := NewKademliaStruct(network2)
+
+	go network.Listen("127.0.0.1", 8002, kademlia)
+	go network2.Listen("127.0.0.1", 8003, kademlia2)
+
+	time.Sleep(1 * time.Millisecond)
+	fmt.Println("Testline1")
+	fmt.Println(network2.SendStoreMessage([]byte("String"), &contact, kademlia2))
+
+	time.Sleep(1 * time.Millisecond)
+
+	hash := NewKademliaID("String")
+	res := network2.SendFindDataMessage(hash, &contact)
+	if res != "String" {
+		fmt.Println("Res is", res)
+		fmt.Println("Broken here")
+		t.Fail()
+	}
+	time.Sleep(6 * time.Second)
+	res2 := network2.SendFindDataMessage(hash, &contact)
+
+	if res2 == "String" {
+		fmt.Println("Res2 is", res)
+		t.Fail()
+	}
+	return
 }
 
 func setupKademliaNodes(i int) []*Kademlia {
@@ -119,10 +156,10 @@ func setupKademliaNodes(i int) []*Kademlia {
 	testKademlia2.Network.RoutingTable.AddContact(testContact)
 	testKademlia3.Network.RoutingTable.AddContact(testContact2)
 	testKademlia4.Network.RoutingTable.AddContact(testContact3)
-	fmt.Println("Contact 1", testKademlia.Network.CurrentNode.ID)
-	fmt.Println("Contact 2", testKademlia2.Network.CurrentNode.ID)
-	fmt.Println("Contact 3", testKademlia3.Network.CurrentNode.ID)
-	fmt.Println("Contact 4", testKademlia4.Network.CurrentNode.ID)
+	//fmt.Println("Contact 1", testKademlia.Network.CurrentNode.ID)
+	//fmt.Println("Contact 2", testKademlia2.Network.CurrentNode.ID)
+	//fmt.Println("Contact 3", testKademlia3.Network.CurrentNode.ID)
+	//fmt.Println("Contact 4", testKademlia4.Network.CurrentNode.ID)
 	time.Sleep(1 * time.Second)
 	testArray := make([]*Kademlia, 4)
 	testArray[0] = testKademlia
@@ -130,4 +167,53 @@ func setupKademliaNodes(i int) []*Kademlia {
 	testArray[2] = testKademlia3
 	testArray[3] = testKademlia4
 	return testArray
+}
+
+func TestNetworkStruct(t *testing.T) {
+	nodeID := NewRandomKademliaID()
+	contact := NewContact(nodeID, "127.0.0.1:3000")
+
+	network := NewNetwork(&contact)
+
+	fmt.Println(network.CurrentNode.ID)
+}
+
+func TestPingNode(t *testing.T) {
+	nodeID := NewRandomKademliaID()
+	contact := NewContact(nodeID, "127.0.0.1:8000")
+	network := NewNetwork(&contact)
+	kademlia := NewKademliaStruct(network)
+
+	go network.Listen("127.0.0.1", 8000, kademlia)
+
+	go network.SendPingMessage(&contact)
+
+	time.Sleep(1 * time.Millisecond)
+
+	return
+}
+
+func TestPingNode2(t *testing.T) {
+	nodeID := NewRandomKademliaID()
+	contact := NewContact(nodeID, "127.0.:8000")
+	network := NewNetwork(&contact)
+
+	if network.SendPingMessage(&contact) {
+		t.Fail()
+	}
+}
+
+func TestFindNode(t *testing.T) {
+	nodeID := NewRandomKademliaID()
+	contact := NewContact(nodeID, "127.0.0.1:8001")
+	network := NewNetwork(&contact)
+	kademlia := NewKademliaStruct(network)
+
+	go network.Listen("127.0.0.1", 8001, kademlia)
+
+	go network.SendFindContactMessage(&contact, nodeID)
+
+	time.Sleep(1 * time.Millisecond)
+
+	return
 }

@@ -1,6 +1,7 @@
 package kademlia
 
 import (
+	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
 	"math/rand"
@@ -13,13 +14,25 @@ const IDLength = 20
 type KademliaID [IDLength]byte
 
 // NewKademliaID returns a new instance of a KademliaID based on the string input
-func NewKademliaID(data string) *KademliaID {
+/*func NewKademliaID(data string) *KademliaID {
 	decoded, _ := hex.DecodeString(data)
 	newDecoded := hex.EncodeToString(decoded[0:IDLength])
 
 	newKademliaID := KademliaID{}
 	for i := 0; i < IDLength; i++ {
 		newKademliaID[i] = newDecoded[i]
+	}
+
+	return &newKademliaID
+}*/
+
+func NewKademliaID(data string) *KademliaID {
+	hashBytes := sha1.Sum([]byte(data))
+	hash := hex.EncodeToString(hashBytes[0:IDLength])
+
+	newKademliaID := KademliaID{}
+	for i := 0; i < IDLength; i++ {
+		newKademliaID[i] = hash[i]
 	}
 
 	return &newKademliaID

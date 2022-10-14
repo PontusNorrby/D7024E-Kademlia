@@ -8,6 +8,7 @@ const alphaValue = 3
 
 type Kademlia struct {
 	m            map[KademliaID]*Value
+	storeMutex   sync.Mutex
 	Network      *Network
 	KnownHolders map[Contact]KademliaID
 }
@@ -20,6 +21,7 @@ func NewKademliaStruct(network *Network) *Kademlia {
 	kademlia := &Kademlia{}
 	kademlia.m = make(map[KademliaID]*Value)
 	kademlia.Network = network
+	kademlia.storeMutex = sync.Mutex{}
 	return kademlia
 }
 
@@ -59,7 +61,7 @@ func (kademlia *Kademlia) lookupContactTest(target *KademliaID, earlierContacts 
 	for _, contact := range contactClosest {
 		for _, previousContact := range earlierContacts {
 			if contact.ID.Equals(previousContact.ID) {
-				foundContacts += 1
+				foundContacts++
 				break
 			}
 		}
@@ -90,10 +92,13 @@ func (kademlia *Kademlia) GetData(value *KademliaID) (*string, Contact) {
 	possibleContacts := kademlia.LookupContact(value).contacts
 	for len(possibleContacts) > 0 {
 		length := minVal(alphaValue, len(possibleContacts))
+		var wg sync.WaitGroup
+		wg.Add(length)
 		var resultString *string = nil
 		var contactCandidates Contact = Contact{}
 		for i := 0; i < length; i++ {
 			go func(possibleContact Contact) {
+				defer wg.Done()
 				findDataRes := kademlia.Network.SendFindDataMessage(value, &possibleContact)
 				if !(findDataRes == "Error") {
 					resultString = &findDataRes
@@ -102,6 +107,7 @@ func (kademlia *Kademlia) GetData(value *KademliaID) (*string, Contact) {
 			}(possibleContacts[0])
 			possibleContacts = possibleContacts[1:]
 		}
+		wg.Wait()
 		if resultString != nil {
 			return resultString, contactCandidates
 		}
