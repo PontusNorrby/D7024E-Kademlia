@@ -30,7 +30,7 @@ func (network *Network) Listen(ip string, port int, kademliaStruct *Kademlia) {
 		return
 	}
 
-	fmt.Println("UDP server up and listening on", addrToString)
+	//fmt.Println("UDP server up and listening on", addrToString)
 
 	defer func(listenUdpResponse *net.UDPConn) {
 		closeError := listenUdpResponse.Close()
@@ -57,7 +57,6 @@ func (network *Network) Listen(ip string, port int, kademliaStruct *Kademlia) {
 	}
 }
 
-// TODO: COMPLETE THIS
 func getResponseMessage(message []byte, network *Network, kademliaStruct *Kademlia) []byte {
 	messageList := strings.Split(string(message), " ")
 	if messageList[0] == "Ping" {
@@ -99,7 +98,7 @@ func getResponseMessage(message []byte, network *Network, kademliaStruct *Kademl
 		lookupValue := kademliaStruct.LookupData(*hash)
 		if lookupValue != nil {
 			body, _ := json.Marshal(network.CurrentNode)
-			return []byte("VALUE;" + string(lookupValue) + " " + string(body))
+			return []byte("VALUE" + string(lookupValue) + " " + string(body))
 		}
 		resClosestNodes := network.RoutingTable.FindClosestContacts(hash, 20)
 		resClosestNodes = append(resClosestNodes, *network.CurrentNode)
@@ -122,9 +121,9 @@ func getResponseMessage(message []byte, network *Network, kademliaStruct *Kademl
 
 func extractContact(message []byte, network *Network) []byte {
 	var contact *Contact
-	err := json.Unmarshal(message, &contact)
-	if err != nil {
-		return nil
+	json.Unmarshal(message, &contact)
+	if !contactUsability(contact, network) {
+		return []byte("Error: Invalid contact information")
 	}
 	network.RoutingTable.AddContact(*contact)
 	return nil
@@ -241,12 +240,11 @@ func (network *Network) SendFindDataMessage(hash *KademliaID, contact *Contact) 
 }
 
 func handleSendDataResponse(message []byte, network *Network) string {
-	fmt.Println("MESSAGE: ", message) //TODO delete this later
 	if string(message[:5]) == "Error" {
 		log.Println(string(message))
 		return string(message)
 	} else {
-		if string(message[:5]) == "VALUE" {
+		if string(message[:4]) == "VALU" {
 			resp := strings.Split(string(message[5:]), " ")
 			var contact *Contact
 			json.Unmarshal([]byte(resp[1]), &contact)
@@ -266,8 +264,7 @@ func handleSendDataResponse(message []byte, network *Network) string {
 	}
 }
 
-// TODO Kademlia not used
-func (network *Network) SendStoreMessage(data []byte, contact *Contact, kademlia *Kademlia) bool {
+func (network *Network) SendStoreMessage(data []byte, contact *Contact) bool {
 	netDialConnection, netDialError := net.Dial("udp4", contact.Address)
 	if netDialError != nil {
 		log.Println(netDialError)

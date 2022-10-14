@@ -8,6 +8,7 @@ const alphaValue = 3
 
 type Kademlia struct {
 	m            map[KademliaID]*Value
+	storeMutex   sync.Mutex
 	Network      *Network
 	KnownHolders map[Contact]KademliaID
 }
@@ -20,7 +21,7 @@ func NewKademliaStruct(network *Network) *Kademlia {
 	kademlia := &Kademlia{}
 	kademlia.m = make(map[KademliaID]*Value)
 	kademlia.Network = network
-	kademlia.KnownHolders = make(map[Contact]KademliaID)
+	kademlia.storeMutex = sync.Mutex{}
 	return kademlia
 }
 
@@ -60,7 +61,7 @@ func (kademlia *Kademlia) lookupContactTest(target *KademliaID, earlierContacts 
 	for _, contact := range contactClosest {
 		for _, previousContact := range earlierContacts {
 			if contact.ID.Equals(previousContact.ID) {
-				foundContacts += 1
+				foundContacts++
 				break
 			}
 		}
@@ -91,10 +92,13 @@ func (kademlia *Kademlia) GetData(value *KademliaID) (*string, Contact) {
 	possibleContacts := kademlia.LookupContact(value).contacts
 	for len(possibleContacts) > 0 {
 		length := minVal(alphaValue, len(possibleContacts))
+		var wg sync.WaitGroup
+		wg.Add(length)
 		var resultString *string = nil
 		var contactCandidates Contact = Contact{}
 		for i := 0; i < length; i++ {
 			go func(possibleContact Contact) {
+				defer wg.Done()
 				findDataRes := kademlia.Network.SendFindDataMessage(value, &possibleContact)
 				if !(findDataRes == "Error") {
 					resultString = &findDataRes
@@ -103,6 +107,7 @@ func (kademlia *Kademlia) GetData(value *KademliaID) (*string, Contact) {
 			}(possibleContacts[0])
 			possibleContacts = possibleContacts[1:]
 		}
+		wg.Wait()
 		if resultString != nil {
 			return resultString, contactCandidates
 		}
@@ -114,18 +119,24 @@ func (kademlia *Kademlia) StoreValue(data []byte) ([]*KademliaID, string) {
 	target := NewKademliaID(string(data))
 	closest := kademlia.LookupContact(target)
 	var storedNodes []*KademliaID
+	var wg sync.WaitGroup
+	wg.Add(len(closest.contacts))
 	for _, contact := range closest.contacts {
 		if contact.ID.Equals(kademlia.Network.RoutingTable.me.ID) {
 			kademlia.store(data)
 			storedNodes = append(storedNodes, contact.ID)
+			wg.Done()
+			continue
 		}
 		go func(contact Contact) {
-			res := kademlia.Network.SendStoreMessage(data, &contact, kademlia)
+			defer wg.Done()
+			res := kademlia.Network.SendStoreMessage(data, &contact)
 			if res {
 				storedNodes = append(storedNodes, contact.ID)
 			}
 		}(contact)
 	}
+	wg.Wait()
 	return storedNodes, target.String()
 }
 
@@ -135,10 +146,6 @@ func (kademlia *Kademlia) store(data []byte) KademliaID {
 	dataStore := Value{data}
 	kademlia.m[*storeId] = &dataStore
 	return *storeId
-}
-
-func (kademlia *Kademlia) AddToKnown(contact *Contact, hash *KademliaID) {
-	kademlia.KnownHolders[*contact] = *hash
 }
 
 func minVal(x int, y int) int {
