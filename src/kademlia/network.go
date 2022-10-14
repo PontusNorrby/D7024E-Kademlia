@@ -60,15 +60,15 @@ func (network *Network) Listen(ip string, port int, kademliaStruct *Kademlia) {
 func getResponseMessage(message []byte, network *Network, kademliaStruct *Kademlia) []byte {
 	messageList := strings.Split(string(message), " ")
 	if messageList[0] == "Ping" {
-		body, err := json.Marshal(network.CurrentNode)
-		if err != nil {
-			panic(err)
+		marshalBody, marshalError := json.Marshal(network.CurrentNode)
+		if marshalError != nil {
+			panic(marshalError)
 		}
 		extraction := extractContact([]byte(messageList[1]), network)
 		if extraction != nil {
 			return extraction
 		}
-		return body
+		return marshalBody
 
 	} else if messageList[0] == "FindContact" {
 		var id *KademliaID
@@ -84,37 +84,37 @@ func getResponseMessage(message []byte, network *Network, kademliaStruct *Kademl
 		}
 		closestNodes := network.RoutingTable.FindClosestContacts(id, 20)
 		closestNodes = append(closestNodes, *network.CurrentNode)
-		body, _ := json.Marshal(closestNodes)
-		return body
+		marshalBody, _ := json.Marshal(closestNodes)
+		return marshalBody
 
 	} else if messageList[0] == "FindData" {
 		var hash *KademliaID
 		json.Unmarshal([]byte(messageList[1]), &hash)
-		ex := extractContact([]byte(messageList[2]), network)
-		if ex != nil {
-			fmt.Println(ex)
-			return ex
+		extraction := extractContact([]byte(messageList[2]), network)
+		if extraction != nil {
+			fmt.Println(extraction)
+			return extraction
 		}
 		lookupValue := kademliaStruct.LookupData(*hash)
 		if lookupValue != nil {
-			body, _ := json.Marshal(network.CurrentNode)
-			return []byte("VALUE" + string(lookupValue) + " " + string(body))
+			marshalBody, _ := json.Marshal(network.CurrentNode)
+			return []byte("VALUE" + string(lookupValue) + " " + string(marshalBody))
 		}
 		resClosestNodes := network.RoutingTable.FindClosestContacts(hash, 20)
 		resClosestNodes = append(resClosestNodes, *network.CurrentNode)
-		body, _ := json.Marshal(resClosestNodes)
-		return []byte("CONT" + string(body))
+		marshalBody, _ := json.Marshal(resClosestNodes)
+		return []byte("CONT" + string(marshalBody))
 
 	} else if messageList[0] == "StoreMessage" {
 		var storeData *[]byte
 		json.Unmarshal([]byte(messageList[1]), &storeData)
 		kademliaStruct.storeDataHelp(*storeData)
-		ex := extractContact([]byte(messageList[2]), network)
-		if ex != nil {
-			return ex
+		extraction := extractContact([]byte(messageList[2]), network)
+		if extraction != nil {
+			return extraction
 		}
-		body, _ := json.Marshal(network.CurrentNode)
-		return body
+		marshalBody, _ := json.Marshal(network.CurrentNode)
+		return marshalBody
 	}
 	return []byte("Error: Invalid RPC protocol")
 }
@@ -136,15 +136,10 @@ func (network *Network) SendPingMessage(contact *Contact) bool {
 		log.Println(netDialError)
 		return false
 	}
-
 	defer netDialConnection.Close()
-
-	//Message builder
 	startMessage := []byte("Ping" + " ")
-	body, _ := json.Marshal(network.CurrentNode)
-	message := append(startMessage, body...)
-	//Message Builder end
-
+	marshalBody, _ := json.Marshal(network.CurrentNode)
+	message := append(startMessage, marshalBody...)
 	netDialConnection.Write(message)
 	buffer := make([]byte, 4096)
 	netDialConnection.SetReadDeadline(time.Now().Add(2 * time.Second))
@@ -176,22 +171,18 @@ func (network *Network) SendFindContactMessage(contact *Contact, searchID *Kadem
 		return nil
 	}
 	defer netDialConnection.Close()
-
-	//Message builder
-	body, _ := json.Marshal(searchID)
-	startMessage := []byte("FindContact" + " " + string(body) + " ")
-	newBody, _ := json.Marshal(network.CurrentNode)
-	message := append(startMessage, newBody...)
-	//Message builder end
-
+	marshalBody, _ := json.Marshal(searchID)
+	startMessage := []byte("FindContact" + " " + string(marshalBody) + " ")
+	newMarshalBody, _ := json.Marshal(network.CurrentNode)
+	message := append(startMessage, newMarshalBody...)
 	netDialConnection.Write(message)
 	buffer := make([]byte, 4096)
 	netDialConnection.SetReadDeadline(time.Now().Add(2 * time.Second))
-	n, err := netDialConnection.Read(buffer)
-	if err != nil {
+	end, readError := netDialConnection.Read(buffer)
+	if readError != nil {
 		return nil
 	}
-	return handleFindContactResponse(buffer[:n], network)
+	return handleFindContactResponse(buffer[:end], network)
 }
 
 func handleFindContactResponse(message []byte, network *Network) []Contact {
@@ -213,6 +204,7 @@ func handleFindContactResponse(message []byte, network *Network) []Contact {
 	}
 }
 
+// TODO hash?
 func (network *Network) SendFindDataMessage(hash *KademliaID, contact *Contact) string {
 	netDialConnection, netDialError := net.Dial("udp4", contact.Address)
 	if netDialError != nil {
@@ -220,22 +212,18 @@ func (network *Network) SendFindDataMessage(hash *KademliaID, contact *Contact) 
 		return "ERROR"
 	}
 	defer netDialConnection.Close()
-
-	//Message builder
-	body, _ := json.Marshal(hash)
-	startMessage := []byte("FindData" + " " + string(body) + " ")
-	newBody, _ := json.Marshal(network.CurrentNode)
-	message := append(startMessage, newBody...)
-	//Message builder end
-
+	marshalBody, _ := json.Marshal(hash)
+	startMessage := []byte("FindData" + " " + string(marshalBody) + " ")
+	newMarshalBody, _ := json.Marshal(network.CurrentNode)
+	message := append(startMessage, newMarshalBody...)
 	netDialConnection.Write(message)
 	buffer := make([]byte, 4096)
 	netDialConnection.SetReadDeadline(time.Now().Add(2 * time.Second))
-	n, err := netDialConnection.Read(buffer)
-	if err != nil {
+	end, readError := netDialConnection.Read(buffer)
+	if readError != nil {
 		return "ERROR"
 	}
-	return handleSendDataResponse(buffer[:n], network)
+	return handleSendDataResponse(buffer[:end], network)
 
 }
 
@@ -244,7 +232,7 @@ func handleSendDataResponse(message []byte, network *Network) string {
 		log.Println(string(message))
 		return string(message)
 	} else {
-		if string(message[:4]) == "VALU" {
+		if string(message[:5]) == "VALUE" {
 			resp := strings.Split(string(message[5:]), " ")
 			var contact *Contact
 			json.Unmarshal([]byte(resp[1]), &contact)
@@ -271,21 +259,18 @@ func (network *Network) SendStoreMessage(data []byte, contact *Contact) bool {
 		return false
 	}
 	defer netDialConnection.Close()
-	//Message builder
-	body, _ := json.Marshal(data)
-	message := []byte("StoreMessage" + " " + string(body) + " ")
-	newBody, _ := json.Marshal(network.CurrentNode)
-	message = append(message, newBody...)
-	//Message builder end
+	marshalBody, _ := json.Marshal(data)
+	message := []byte("StoreMessage" + " " + string(marshalBody) + " ")
+	newMarshalBody, _ := json.Marshal(network.CurrentNode)
+	message = append(message, newMarshalBody...)
 	netDialConnection.Write(message)
 	buffer := make([]byte, 4096)
 	netDialConnection.SetReadDeadline(time.Now().Add(2 * time.Second))
-	n, err := netDialConnection.Read(buffer)
-	if err != nil {
+	end, readError := netDialConnection.Read(buffer)
+	if readError != nil {
 		return false
 	}
-	// fmt.Println("\tResponse from server:", string(buffer[:n]))
-	handleStoreResponse(buffer[:n], network)
+	handleStoreResponse(buffer[:end], network)
 	return true
 }
 
