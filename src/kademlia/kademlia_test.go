@@ -10,8 +10,8 @@ import (
 var tempInt int = 0
 
 func TestKademliaID_Less(t *testing.T) {
-	testNode := ToKademliaID("0000000000000000000000000000000000000000")
-	testNode1 := ToKademliaID("0000000000000000000000000000000000000001")
+	testNode := IDDecoder("0000000000000000000000000000000000000000")
+	testNode1 := IDDecoder("0000000000000000000000000000000000000001")
 	lessRes := testNode.Less(testNode1)
 	if !lessRes {
 		t.Fail()
@@ -19,8 +19,8 @@ func TestKademliaID_Less(t *testing.T) {
 }
 
 func TestKademliaID_Equals(t *testing.T) {
-	testNode := ToKademliaID("A000000000000000000000000000000000000000")
-	testNode1 := ToKademliaID("A000000000000000000000000000000000000000")
+	testNode := IDDecoder("A000000000000000000000000000000000000000")
+	testNode1 := IDDecoder("A000000000000000000000000000000000000000")
 	testResult := testNode.Equals(testNode1)
 	if !testResult {
 		t.Fail()
@@ -28,8 +28,8 @@ func TestKademliaID_Equals(t *testing.T) {
 }
 
 func TestKademliaID_CalcDistance(t *testing.T) {
-	testNode := ToKademliaID("0000000000000000000000000000000000000010")
-	testNode1 := ToKademliaID("0000000000000000000000000000000000000001")
+	testNode := IDDecoder("0000000000000000000000000000000000000010")
+	testNode1 := IDDecoder("0000000000000000000000000000000000000001")
 	distanceRes := testNode.CalcDistance(testNode1)
 	//fmt.Println(distanceRes)
 	if distanceRes.String() != "0000000000000000000000000000000000000011" {
@@ -38,14 +38,14 @@ func TestKademliaID_CalcDistance(t *testing.T) {
 }
 
 func TestToKademliaID(t *testing.T) {
-	testNode := ToKademliaID("A0000000000000000000000000000000000000000")
+	testNode := IDDecoder("A0000000000000000000000000000000000000000")
 	if testNode != nil {
 		t.Fail()
 	}
 }
 
 func TestKademliaId(t *testing.T) {
-	testNode := ToKademliaID("A000000000000000000000000000000000000000")
+	testNode := IDDecoder("A000000000000000000000000000000000000000")
 	if testNode.String() != "a000000000000000000000000000000000000000" {
 		t.Fail()
 	}
@@ -56,7 +56,7 @@ func TestKademlia_LookupData(t *testing.T) {
 	testKademlia := NewKademliaStruct(NewNetwork(&testContact))
 	testToken := []byte("AA")
 	fmt.Println(testToken)
-	testHash := testKademlia.store(testToken)
+	testHash := testKademlia.storeDataHelp(testToken)
 	response := testKademlia.LookupData(testHash)
 	if response == nil {
 		t.Fail()
@@ -81,7 +81,7 @@ func TestFindContact(t *testing.T) {
 func TestStore(t *testing.T) {
 	testNodes := setupKademliaNodes(tempInt)
 	tempInt = tempInt + 4
-	testResult, _ := testNodes[3].StoreValue([]byte("SavedValue"))
+	testResult, _ := testNodes[3].StoreData([]byte("SavedValue"))
 	if len(testResult) != len(testNodes) {
 		fmt.Println("STORED ON:", testResult, "\nTOTAL NODES:", len(testNodes))
 		t.FailNow()
@@ -132,10 +132,10 @@ func TestStoreAndFind(t *testing.T) {
 }
 
 func setupKademliaNodes(i int) []*Kademlia {
-	testNode1 := ToKademliaID("AAAA000000000000000000000000000000000000")
-	testNode2 := ToKademliaID("BBBB000000000000000000000000000000000000")
-	testNode3 := ToKademliaID("CCCC000000000000000000000000000000000000")
-	testNode4 := ToKademliaID("DDDD000000000000000000000000000000000000")
+	testNode1 := IDDecoder("AAAA000000000000000000000000000000000000")
+	testNode2 := IDDecoder("BBBB000000000000000000000000000000000000")
+	testNode3 := IDDecoder("CCCC000000000000000000000000000000000000")
+	testNode4 := IDDecoder("DDDD000000000000000000000000000000000000")
 	testContact := NewContact(testNode1, ("127.0.0.1:" + fmt.Sprint(1000+i)))
 	testContact2 := NewContact(testNode2, ("127.0.0.1:" + fmt.Sprint(1001+i)))
 	testContact3 := NewContact(testNode3, ("127.0.0.1:" + fmt.Sprint(1002+i)))

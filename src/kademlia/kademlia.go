@@ -26,7 +26,7 @@ func NewKademliaStruct(network *Network) *Kademlia {
 
 func (kademlia *Kademlia) LookupContact(target *KademliaID) ContactCandidates {
 	closerContacts := kademlia.Network.RoutingTable.FindClosestContacts(target, bucketSize)
-	contactCandidates := kademlia.lookupContactTest(target, closerContacts)
+	contactCandidates := kademlia.lookupContactHelp(target, closerContacts)
 	nodeContacts := contactCandidates.contacts
 	if target.Equals(kademlia.Network.RoutingTable.me.ID) || 20 > len(nodeContacts) {
 		contact := kademlia.Network.RoutingTable.me
@@ -39,7 +39,7 @@ func (kademlia *Kademlia) LookupContact(target *KademliaID) ContactCandidates {
 	return contactCandidates
 }
 
-func (kademlia *Kademlia) lookupContactTest(target *KademliaID, earlierContacts []Contact) ContactCandidates {
+func (kademlia *Kademlia) lookupContactHelp(target *KademliaID, earlierContacts []Contact) ContactCandidates {
 	newRouteFinding := NewRoutingTable(*kademlia.Network.CurrentNode)
 	var goLock sync.WaitGroup
 	minLength := minVal(alphaValue, len(earlierContacts))
@@ -68,7 +68,7 @@ func (kademlia *Kademlia) lookupContactTest(target *KademliaID, earlierContacts 
 	if foundContacts == len(contactClosest) {
 		return ContactCandidates{contactClosest}
 	} else {
-		return kademlia.lookupContactTest(target, contactClosest)
+		return kademlia.lookupContactHelp(target, contactClosest)
 	}
 }
 
@@ -114,7 +114,7 @@ func (kademlia *Kademlia) GetData(value *KademliaID) (*string, Contact) {
 	return nil, Contact{}
 }
 
-func (kademlia *Kademlia) StoreValue(data []byte) ([]*KademliaID, string) {
+func (kademlia *Kademlia) StoreData(data []byte) ([]*KademliaID, string) {
 	target := NewKademliaID(string(data))
 	closest := kademlia.LookupContact(target)
 	var storedNodes []*KademliaID
@@ -122,7 +122,7 @@ func (kademlia *Kademlia) StoreValue(data []byte) ([]*KademliaID, string) {
 	wg.Add(len(closest.contacts))
 	for _, contact := range closest.contacts {
 		if contact.ID.Equals(kademlia.Network.RoutingTable.me.ID) {
-			kademlia.store(data)
+			kademlia.storeDataHelp(data)
 			storedNodes = append(storedNodes, contact.ID)
 			wg.Done()
 			continue
@@ -140,7 +140,7 @@ func (kademlia *Kademlia) StoreValue(data []byte) ([]*KademliaID, string) {
 }
 
 // Just stores the data in this node not on the "correct" node
-func (kademlia *Kademlia) store(data []byte) KademliaID {
+func (kademlia *Kademlia) storeDataHelp(data []byte) KademliaID {
 	storeId := NewKademliaID(string(data))
 	dataStore := Value{data}
 	kademlia.m[*storeId] = &dataStore

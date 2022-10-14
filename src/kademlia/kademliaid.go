@@ -7,47 +7,34 @@ import (
 	"math/rand"
 )
 
-// the static number of bytes in a KademliaID
+// IDLength the static number of bytes in a KademliaID
 const IDLength = 20
 
-// type definition of a KademliaID
+// KademliaID type definition of a KademliaID
 type KademliaID [IDLength]byte
 
-// NewKademliaID returns a new instance of a KademliaID based on the string input
-/*func NewKademliaID(data string) *KademliaID {
-	decoded, _ := hex.DecodeString(data)
-	newDecoded := hex.EncodeToString(decoded[0:IDLength])
-
-	newKademliaID := KademliaID{}
-	for i := 0; i < IDLength; i++ {
-		newKademliaID[i] = newDecoded[i]
-	}
-
-	return &newKademliaID
-}*/
-
 func NewKademliaID(data string) *KademliaID {
-	hashBytes := sha1.Sum([]byte(data))
-	hash := hex.EncodeToString(hashBytes[0:IDLength])
+	dataHash := sha1.Sum([]byte(data))
+	decoded := hex.EncodeToString(dataHash[0:IDLength])
 
 	newKademliaID := KademliaID{}
 	for i := 0; i < IDLength; i++ {
-		newKademliaID[i] = hash[i]
+		newKademliaID[i] = decoded[i]
 	}
 
 	return &newKademliaID
 }
 
-func ToKademliaID(data string) *KademliaID {
+func IDDecoder(data string) *KademliaID {
 	if len(data) < 40 {
 		return nil
 	}
-	res, err := hex.DecodeString(data)
-	if err != nil {
-		fmt.Println("FAILED TO DECODE KADEMLIA ID", err)
+	hexDecodeStringResult, hexDecodeStringError := hex.DecodeString(data)
+	if hexDecodeStringError != nil {
+		fmt.Println("Cannot decode the id", hexDecodeStringError)
 		return nil
 	} else {
-		return (*KademliaID)(res)
+		return (*KademliaID)(hexDecodeStringResult)
 	}
 }
 

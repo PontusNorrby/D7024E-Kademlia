@@ -13,10 +13,9 @@ import (
 )
 
 var (
-	BaseIp         string = "172.20.0.2"
-	Port           int    = 3000
+	BaseIp         = "172.20.0.2"
+	Port           = 3000
 	kademliaStruct *kademlia.Kademlia
-	//OtherPort int    = 3001
 )
 
 func main() {
@@ -49,9 +48,6 @@ func main() {
 
 	go kademliaStruct.Network.Listen(localIP.String(), Port, kademliaStruct)
 	go cli.StartCLI(exitNode, kademliaStruct)
-	//b := []byte("ABC")
-	//kademliaStruct.StoreValue(b)
-
 	for {
 		time.Sleep(5 * time.Second)
 	}

@@ -26,7 +26,7 @@ func run(userInput func() string, nodeExit func(), kademlia *kademlia.Kademlia) 
 				continue
 			}
 		} else if input == "put" {
-			store(userInput, kademlia.StoreValue)
+			store(userInput, kademlia.StoreData)
 		} else if input == "get" {
 			get(userInput, kademlia)
 		} else if input == "help" {
@@ -52,7 +52,7 @@ func store(input func() string, Store func(data []byte) ([]*KademliaID, string))
 func get(input func() string, kademlia *kademlia.Kademlia) {
 	fmt.Println("Please insert the hash value to get the node(s) id(s)...")
 	stringValue := input()
-	id := ToKademliaID(stringValue)
+	id := IDDecoder(stringValue)
 	value, contact := kademlia.GetData(id)
 	if value == nil {
 		fmt.Println("No such hash value!")

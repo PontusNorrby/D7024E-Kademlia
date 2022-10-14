@@ -108,7 +108,7 @@ func getResponseMessage(message []byte, network *Network, kademliaStruct *Kademl
 	} else if messageList[0] == "StoreMessage" {
 		var storeData *[]byte
 		json.Unmarshal([]byte(messageList[1]), &storeData)
-		kademliaStruct.store(*storeData)
+		kademliaStruct.storeDataHelp(*storeData)
 		ex := extractContact([]byte(messageList[2]), network)
 		if ex != nil {
 			return ex
