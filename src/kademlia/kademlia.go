@@ -20,7 +20,6 @@ func NewKademliaStruct(network *Network) *Kademlia {
 	kademlia := &Kademlia{}
 	kademlia.m = make(map[KademliaID]*Value)
 	kademlia.Network = network
-	kademlia.KnownHolders = make(map[Contact]KademliaID)
 	return kademlia
 }
 
@@ -141,10 +140,6 @@ func (kademlia *Kademlia) store(data []byte) KademliaID {
 	dataStore := Value{data}
 	kademlia.m[*storeId] = &dataStore
 	return *storeId
-}
-
-func (kademlia *Kademlia) AddToKnown(contact *Contact, hash *KademliaID) {
-	kademlia.KnownHolders[*contact] = *hash
 }
 
 func minVal(x int, y int) int {
