@@ -7,10 +7,9 @@ import (
 const alphaValue = 3
 
 type Kademlia struct {
-	m            map[KademliaID]*Value
-	storeMutex   sync.Mutex
-	Network      *Network
-	KnownHolders map[Contact]KademliaID
+	m          map[KademliaID]*Value
+	storeMutex sync.Mutex
+	Network    *Network
 }
 
 type Value struct {

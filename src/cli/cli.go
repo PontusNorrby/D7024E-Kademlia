@@ -9,18 +9,18 @@ import (
 	"strings"
 )
 
-func StartCLI(nodeShutDown func(), kademlia *kademlia.Kademlia) {
-	run(userInput, nodeShutDown, kademlia)
+func StartCLI(nodeExit func(), kademlia *kademlia.Kademlia) {
+	run(userInput, nodeExit, kademlia)
 }
 
-func run(userInput func() string, nodeShutDown func(), kademlia *kademlia.Kademlia) {
+func run(userInput func() string, nodeExit func(), kademlia *kademlia.Kademlia) {
 	for {
 		input := userInput()
 		if input == "exit" {
 			fmt.Println("Are you sure you want exit the node(y/n)?")
 			confirmation := userInput()
 			if confirmation == "y" {
-				nodeShutDown()
+				nodeExit()
 				return
 			} else {
 				continue
@@ -42,7 +42,10 @@ func store(input func() string, Store func(data []byte) ([]*KademliaID, string))
 	fmt.Println("Please insert the value you want to store...")
 	value := input()
 	storeID, target := Store([]byte(value))
-	fmt.Println("The value you saved is ", value, "\n", "The hash of the value is ", target, "\n", "Your value is saved in node(s) with id(:s)", storeID)
+	fmt.Println(
+		"\bThe value you saved is                    	", value, "\n",
+		"\bThe hash of the value is                      	", target, "\n",
+		"\bYour value is saved in node(s) with id(:s)	", storeID)
 
 }
 
@@ -55,12 +58,8 @@ func get(input func() string, kademlia *kademlia.Kademlia) {
 		fmt.Println("No such hash value!")
 		return
 	}
-	fmt.Println("\""+*value+"\" found at node", contact.ID)
+	fmt.Println(*value+": found at node			", contact.ID)
 }
-
-//func store(input func() string, store func(data []byte) kademlia.KademliaID) {
-
-//}
 
 func helpList() {
 	fmt.Println("put - Store a value in the nodes, takes string and returns the hash value and the node id")

@@ -48,7 +48,7 @@ func main() {
 	}
 
 	go kademliaStruct.Network.Listen(localIP.String(), Port, kademliaStruct)
-	go cli.StartCLI(nodeShutDown, kademliaStruct)
+	go cli.StartCLI(exitNode, kademliaStruct)
 	//b := []byte("ABC")
 	//kademliaStruct.StoreValue(b)
 
@@ -75,7 +75,7 @@ func GetOutboundIP() net.IP {
 	return localAddr.IP
 }
 
-func nodeShutDown() {
+func exitNode() {
 	fmt.Println("Shutting down the node...")
 	os.Exit(0)
 }
