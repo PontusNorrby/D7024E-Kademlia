@@ -110,7 +110,7 @@ func TestStoreAndFind(t *testing.T) {
 
 	time.Sleep(1 * time.Millisecond)
 	fmt.Println("Testline1")
-	fmt.Println(network2.SendStoreMessage([]byte("String"), &contact, kademlia2))
+	fmt.Println(network2.SendStoreMessage([]byte("String"), &contact))
 
 	time.Sleep(1 * time.Millisecond)
 
