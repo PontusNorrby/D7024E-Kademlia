@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var tempInt int = 0
+var tempInt = 0
 
 func TestKademliaID_Less(t *testing.T) {
 	testNode := IDDecoder("0000000000000000000000000000000000000000")
@@ -31,7 +31,6 @@ func TestKademliaID_CalcDistance(t *testing.T) {
 	testNode := IDDecoder("0000000000000000000000000000000000000010")
 	testNode1 := IDDecoder("0000000000000000000000000000000000000001")
 	distanceRes := testNode.CalcDistance(testNode1)
-	//fmt.Println(distanceRes)
 	if distanceRes.String() != "0000000000000000000000000000000000000011" {
 		t.Fail()
 	}
@@ -156,10 +155,6 @@ func setupKademliaNodes(i int) []*Kademlia {
 	testKademlia2.Network.RoutingTable.AddContact(testContact)
 	testKademlia3.Network.RoutingTable.AddContact(testContact2)
 	testKademlia4.Network.RoutingTable.AddContact(testContact3)
-	//fmt.Println("Contact 1", testKademlia.Network.CurrentNode.ID)
-	//fmt.Println("Contact 2", testKademlia2.Network.CurrentNode.ID)
-	//fmt.Println("Contact 3", testKademlia3.Network.CurrentNode.ID)
-	//fmt.Println("Contact 4", testKademlia4.Network.CurrentNode.ID)
 	time.Sleep(1 * time.Second)
 	testArray := make([]*Kademlia, 4)
 	testArray[0] = testKademlia
