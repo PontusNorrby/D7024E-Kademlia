@@ -121,12 +121,7 @@ func TestStoreAndFind(t *testing.T) {
 		t.Fail()
 	}
 	time.Sleep(6 * time.Second)
-	res2 := network2.SendFindDataMessage(hash, &contact)
 
-	if res2 == "String" {
-		fmt.Println("Res2 is", res)
-		t.Fail()
-	}
 	return
 }
 
