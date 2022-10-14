@@ -7,143 +7,127 @@ import (
 	"time"
 )
 
-var i int = 0
+var tempInt int = 0
 
-/*func TestKademliaID_Less(t *testing.T) {
-	idNode1 := ToKademliaID("0000000000000000000000000000000000000000")
-	idNode2 := ToKademliaID("0000000000000000000000000000000000000001")
-	lessRes := idNode1.Less(idNode2)
+func TestKademliaID_Less(t *testing.T) {
+	testNode := ToKademliaID("0000000000000000000000000000000000000000")
+	testNode1 := ToKademliaID("0000000000000000000000000000000000000001")
+	lessRes := testNode.Less(testNode1)
 	if !lessRes {
 		t.Fail()
 	}
 }
 
 func TestKademliaID_Equals(t *testing.T) {
-	idNode1 := ToKademliaID("A000000000000000000000000000000000000000")
-	idNode2 := ToKademliaID("A000000000000000000000000000000000000000")
-	equalsRes := idNode1.Equals(idNode2)
-	if !equalsRes {
+	testNode := ToKademliaID("A000000000000000000000000000000000000000")
+	testNode1 := ToKademliaID("A000000000000000000000000000000000000000")
+	testResult := testNode.Equals(testNode1)
+	if !testResult {
 		t.Fail()
 	}
 }
 
 func TestKademliaID_CalcDistance(t *testing.T) {
-	idNode1 := ToKademliaID("0000000000000000000000000000000000000010")
-	idNode2 := ToKademliaID("0000000000000000000000000000000000000001")
-	distanceRes := idNode1.CalcDistance(idNode2)
+	testNode := ToKademliaID("0000000000000000000000000000000000000010")
+	testNode1 := ToKademliaID("0000000000000000000000000000000000000001")
+	distanceRes := testNode.CalcDistance(testNode1)
 	//fmt.Println(distanceRes)
 	if distanceRes.String() != "0000000000000000000000000000000000000011" {
 		t.Fail()
 	}
-}*/
+}
 
-func TestFindContact(t *testing.T) {
-	kademliaNodes := returnKademliaNodes(i)
-	i = i + 4
-	res := kademliaNodes[3].LookupContact(kademliaNodes[0].Network.CurrentNode.ID).contacts
-	fmt.Println(res, kademliaNodes[0].Network.CurrentNode.ID)
-	if res == nil || !res[0].ID.Equals(kademliaNodes[0].Network.CurrentNode.ID) {
+func TestToKademliaID(t *testing.T) {
+	testNode := ToKademliaID("A0000000000000000000000000000000000000000")
+	if testNode != nil {
 		t.Fail()
 	}
 }
 
-/*
-	func TestFindContact2(t *testing.T) {
-		kademliaNodes := returnKademliaNodes(i)
-		i = i + 4
-		res := kademliaNodes[3].LookupContact(kademliaNodes[1].Network.CurrentNode.ID).contacts
-		if res == nil || !res[0].ID.Equals(kademliaNodes[1].Network.CurrentNode.ID) {
-			t.Fail()
-		}
+func TestKademliaId(t *testing.T) {
+	testNode := ToKademliaID("A000000000000000000000000000000000000000")
+	if testNode.String() != "a000000000000000000000000000000000000000" {
+		t.Fail()
 	}
-
-	func TestFindContact3(t *testing.T) {
-		kademliaNodes := returnKademliaNodes(i)
-		i = i + 4
-		res := kademliaNodes[3].LookupContact(kademliaNodes[2].Network.CurrentNode.ID).contacts
-		if res == nil || !res[0].ID.Equals(kademliaNodes[2].Network.CurrentNode.ID) {
-			t.Fail()
-		}
-	}
-
-	func TestFindContact4(t *testing.T) {
-		kademliaNodes := returnKademliaNodes(i)
-		i = i + 4
-		kadId := ToKademliaID(kademliaNodes[3].Network.CurrentNode.ID.String())
-		res := kademliaNodes[3].LookupContact(kadId).contacts
-		fmt.Println(res, kademliaNodes[3].Network.CurrentNode)
-		if res == nil || !res[0].ID.Equals(kademliaNodes[3].Network.CurrentNode.ID) {
-			t.Fail()
-		}
-	}
-*/
-func returnKademliaNodes(i int) []*Kademlia {
-	nodeID := ToKademliaID("A000000000000000000000000000000000000000")
-	contact := NewContact(nodeID, ("127.0.0.1:" + fmt.Sprint(7000+i)))
-	network := NewNetwork(&contact)
-	kademlia := NewKademliaStruct(network)
-	nodeID2 := ToKademliaID("B000000000000000000000000000000000000000")
-	contact2 := NewContact(nodeID2, ("127.0.0.1:" + fmt.Sprint(7001+i)))
-	network2 := NewNetwork(&contact2)
-	kademlia2 := NewKademliaStruct(network2)
-	nodeID3 := ToKademliaID("C000000000000000000000000000000000000000")
-	contact3 := NewContact(nodeID3, ("127.0.0.1:" + fmt.Sprint(7002+i)))
-	network3 := NewNetwork(&contact3)
-	kademlia3 := NewKademliaStruct(network3)
-	nodeID4 := ToKademliaID("D000000000000000000000000000000000000000")
-	contact4 := NewContact(nodeID4, ("127.0.0.1:" + fmt.Sprint(7003+i)))
-	network4 := NewNetwork(&contact4)
-	kademlia4 := NewKademliaStruct(network4)
-
-	go kademlia.Network.Listen("127.0.0.1", 7000+i, kademlia)
-	go kademlia2.Network.Listen("127.0.0.1", 7001+i, kademlia2)
-	go kademlia3.Network.Listen("127.0.0.1", 7002+i, kademlia3)
-	go kademlia3.Network.Listen("127.0.0.1", 7003+i, kademlia4)
-	kademlia2.Network.RoutingTable.AddContact(contact)
-	kademlia3.Network.RoutingTable.AddContact(contact2)
-	kademlia4.Network.RoutingTable.AddContact(contact3)
-	fmt.Println("Contact 1", kademlia.Network.CurrentNode.ID)
-	fmt.Println("Contact 2", kademlia2.Network.CurrentNode.ID)
-	fmt.Println("Contact 3", kademlia3.Network.CurrentNode.ID)
-	fmt.Println("Contact 4", kademlia4.Network.CurrentNode.ID)
-	time.Sleep(1 * time.Second)
-	kademliaArray := make([]*Kademlia, 4)
-	kademliaArray[0] = kademlia
-	kademliaArray[1] = kademlia2
-	kademliaArray[2] = kademlia3
-	kademliaArray[3] = kademlia4
-	return kademliaArray
 }
 
-/*Sets up 3 kademlia nodes
-func setupKademlia() []*Kademlia {
-	node1 := ToKademliaID("FFFFFFFF00000000000000000000000000000000")
-	node2 := ToKademliaID("FFFFFFF000000000000000000000000000000000")
-	node3 := ToKademliaID("FFFFFF0000000000000000000000000000000000")
-	contact1 := NewContact(node1, "172.20.0.1")
-	contact2 := NewContact(node2, "172.20.0.2")
-	contact3 := NewContact(node3, "172.20.0.3")
-	network1 := NewNetwork(&contact1)
-	network2 := NewNetwork(&contact2)
-	network3 := NewNetwork(&contact3)
-	kademlia1 := NewKademliaStruct(network1)
-	kademlia2 := NewKademliaStruct(network2)
-	kademlia3 := NewKademliaStruct(network3)
+func TestKademlia_LookupData(t *testing.T) {
+	testContact := NewContact(NewRandomKademliaID(), "127.0.0.1")
+	testKademlia := NewKademliaStruct(NewNetwork(&testContact))
+	testToken := []byte("AA")
+	fmt.Println(testToken)
+	testHash := testKademlia.store(testToken)
+	response := testKademlia.LookupData(testHash)
+	if response == nil {
+		t.Fail()
+	}
+	response = testKademlia.LookupData(*NewRandomKademliaID())
 
-	go kademlia1.Network.Listen("172.20.0.1", 1000, kademlia1)
-	go kademlia2.Network.Listen("172.20.0.2", 1001, kademlia2)
-	go kademlia3.Network.Listen("172.20.0.3", 1002, kademlia3)
-	//kademlia2 knows of 1 and is put into kademlia 3 who is put into kademlia4
-	kademlia2.Network.RoutingTable.AddContact(contact1)
-	kademlia3.Network.RoutingTable.AddContact(contact2)
-	fmt.Println("Contact 1: ", kademlia1.Network.CurrentNode.ID)
-	fmt.Println("Contact 2: ", kademlia2.Network.CurrentNode.ID)
-	fmt.Println("Contact 3: ", kademlia3.Network.CurrentNode.ID)
+	if response != nil {
+		t.Fail()
+	}
+}
+
+func TestFindContact(t *testing.T) {
+	testNodes := setupKademliaNodes(tempInt)
+	tempInt = tempInt + 4
+	testResult := testNodes[3].LookupContact(testNodes[0].Network.CurrentNode.ID).contacts
+
+	if testResult == nil || !testResult[0].ID.Equals(testNodes[0].Network.CurrentNode.ID) {
+		t.Fail()
+	}
+}
+
+func TestStore(t *testing.T) {
+	testNodes := setupKademliaNodes(tempInt)
+	tempInt = tempInt + 4
+	testResult, _ := testNodes[3].StoreValue([]byte("SavedValue"))
+	if len(testResult) != len(testNodes) {
+		fmt.Println("STORED ON:", testResult, "\nTOTAL NODES:", len(testNodes))
+		t.FailNow()
+	}
+	for i, node := range testNodes {
+		if len(node.m) == 0 {
+			fmt.Println("Node", i, " have", len(node.m))
+			t.FailNow()
+		}
+	}
+}
+
+func setupKademliaNodes(i int) []*Kademlia {
+	testNode1 := ToKademliaID("AAAA000000000000000000000000000000000000")
+	testNode2 := ToKademliaID("BBBB000000000000000000000000000000000000")
+	testNode3 := ToKademliaID("CCCC000000000000000000000000000000000000")
+	testNode4 := ToKademliaID("DDDD000000000000000000000000000000000000")
+	testContact := NewContact(testNode1, ("127.0.0.1:" + fmt.Sprint(1000+i)))
+	testContact2 := NewContact(testNode2, ("127.0.0.1:" + fmt.Sprint(1001+i)))
+	testContact3 := NewContact(testNode3, ("127.0.0.1:" + fmt.Sprint(1002+i)))
+	testContact4 := NewContact(testNode4, ("127.0.0.1:" + fmt.Sprint(1003+i)))
+	testNetwork := NewNetwork(&testContact)
+	testNetwork2 := NewNetwork(&testContact2)
+	testNetwork3 := NewNetwork(&testContact3)
+	testNetwork4 := NewNetwork(&testContact4)
+	testKademlia := NewKademliaStruct(testNetwork)
+	testKademlia2 := NewKademliaStruct(testNetwork2)
+	testKademlia3 := NewKademliaStruct(testNetwork3)
+	testKademlia4 := NewKademliaStruct(testNetwork4)
+
+	go testKademlia.Network.Listen("127.0.0.1", 1000+i, testKademlia)
+	go testKademlia2.Network.Listen("127.0.0.1", 1001+i, testKademlia2)
+	go testKademlia3.Network.Listen("127.0.0.1", 1002+i, testKademlia3)
+	go testKademlia3.Network.Listen("127.0.0.1", 1003+i, testKademlia4)
+	testKademlia2.Network.RoutingTable.AddContact(testContact)
+	testKademlia3.Network.RoutingTable.AddContact(testContact2)
+	testKademlia4.Network.RoutingTable.AddContact(testContact3)
+	fmt.Println("Contact 1", testKademlia.Network.CurrentNode.ID)
+	fmt.Println("Contact 2", testKademlia2.Network.CurrentNode.ID)
+	fmt.Println("Contact 3", testKademlia3.Network.CurrentNode.ID)
+	fmt.Println("Contact 4", testKademlia4.Network.CurrentNode.ID)
 	time.Sleep(1 * time.Second)
-	arrKademlia := make([]*Kademlia, 3)
-	arrKademlia[0] = kademlia1
-	arrKademlia[1] = kademlia2
-	arrKademlia[2] = kademlia3
-
-	return arrKademlia
-}*/
+	testArray := make([]*Kademlia, 4)
+	testArray[0] = testKademlia
+	testArray[1] = testKademlia2
+	testArray[2] = testKademlia3
+	testArray[3] = testKademlia4
+	return testArray
+}
