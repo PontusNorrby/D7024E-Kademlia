@@ -39,3 +39,9 @@ Head to the folder you cloned the code in and the to src folder and then to kade
 ```
 go test
 ```
+or 
+```
+go test -cover
+```
+to get the test coverage
+
