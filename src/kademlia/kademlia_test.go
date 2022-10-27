@@ -77,7 +77,7 @@ func TestFindContact(t *testing.T) {
 	}
 }
 
-func TestStore(t *testing.T) {
+func TestStoreData(t *testing.T) {
 	testNodes := setupKademliaNodes(tempInt)
 	tempInt = tempInt + 4
 	testResult, _ := testNodes[3].StoreData([]byte("SavedValue"))
@@ -94,7 +94,7 @@ func TestStore(t *testing.T) {
 	fmt.Println("Cleared Store test")
 }
 
-func TestStoreAndFind(t *testing.T) {
+func TestStoreDataAndFindData(t *testing.T) {
 	nodeID := NewRandomKademliaID()
 	nodeID2 := NewRandomKademliaID()
 	contact := NewContact(nodeID, "127.0.0.1:8002")
@@ -183,7 +183,7 @@ func TestPingNode(t *testing.T) {
 	return
 }
 
-func TestPingNode2(t *testing.T) {
+func TestPingFalseAddress(t *testing.T) {
 	nodeID := NewRandomKademliaID()
 	contact := NewContact(nodeID, "127.0.:8000")
 	network := NewNetwork(&contact)
