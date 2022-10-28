@@ -16,6 +16,7 @@ var (
 	BaseIp         = "172.20.0.2"
 	Port           = 3000
 	kademliaStruct *kademlia.Kademlia
+	baseContact    kademlia.Contact
 )
 
 func main() {
@@ -25,33 +26,33 @@ func main() {
 	selfId := kademlia.NewRandomKademliaID()
 	localIP := GetOutboundIP()
 
-	//Creates contacts for both the new node and the base node
+	//Creates contacts for the new node
 	selfContact := kademlia.NewContact(selfId, "")
-	baseContact := kademlia.NewContact(kademlia.NewRandomKademliaID(), BaseIp+":"+strconv.Itoa(Port))
 
 	if localIP.String() == BaseIp {
+		baseContact = kademlia.NewContact(kademlia.NewRandomKademliaID(), BaseIp+":"+strconv.Itoa(Port))
 		kademliaPing := kademlia.NewNetwork(&selfContact).SendPingMessage(&baseContact)
 		if kademliaPing {
 			Port = rand.Intn(65535-1024) + 1024
 		}
 		selfContact = kademlia.NewContact(kademlia.NewRandomKademliaID(), localIP.String()+":"+strconv.Itoa(Port))
-		baseContact = kademlia.NewContact(kademlia.NewRandomKademliaID(), localIP.String()+":"+strconv.Itoa(Port))
-		kademliaStruct = kademlia.NewKademliaStruct(kademlia.NewNetwork(&selfContact))
+		kademliaStruct = kademlia.NewKademliaStruct(kademlia.NewNetwork(&baseContact))
+
 	} else {
+		baseContact = kademlia.NewContact(kademlia.NewRandomKademliaID(), BaseIp+":"+strconv.Itoa(Port))
+		Port = rand.Intn(65535-1024) + 1024
 		selfContact = kademlia.NewContact(kademlia.NewRandomKademliaID(), localIP.String()+":"+strconv.Itoa(Port))
-		kademliaStruct = kademlia.NewKademliaStruct(kademlia.NewNetwork(&selfContact))
-		if !kademliaStruct.Network.SendPingMessage(&baseContact) {
+		kademliaStruct = kademlia.NewKademliaStruct(kademlia.NewNetwork(&baseContact))
+		success := kademliaStruct.Network.SendPingMessage(&baseContact)
+		if !success {
 			panic("Can't connect to baseNode")
 		}
-		Port = rand.Intn(65535-1024) + 1024
 	}
 
 	go kademliaStruct.Network.Listen(localIP.String(), Port, kademliaStruct)
-	go cli.StartCLI(exitNode, kademliaStruct)
-	for {
-		time.Sleep(5 * time.Second)
-	}
-
+	cli.StartCLI(exitNode, kademliaStruct)
+	time.Sleep(1 * time.Second)
+	kademliaStruct.Network.SendFindContactMessage(&baseContact, selfContact.ID)
 }
 
 func GetOutboundIP() net.IP {
